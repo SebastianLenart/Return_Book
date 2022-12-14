@@ -8,7 +8,7 @@ def create_connection():
 
 
 def get_author(cursor):
-    cursor.execute("SELECT * FROM books WHERE author=?", ("autor4",))
+    cursor.execute("SELECT * FROM books WHERE author=?", ("autor2",))
     data = []
     for book in cursor.fetchall():
         book_id, title, author, created_at = book
