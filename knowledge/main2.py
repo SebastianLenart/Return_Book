@@ -11,11 +11,13 @@ def get_author(cursor):
     cursor.execute("SELECT * FROM books WHERE author=?", ("autor2",))
     data = []
     for book in cursor.fetchall():
+        data.append((book[0], book[1], book[2], book[3]))
         book_id, title, author, created_at = book
-        data.append({
-            "title": title,
-            "author": author
-        })
+        # data.append({
+        #         #     "title": title,
+        #         #     "author": author
+        #         # })
+
     return data
 
 
