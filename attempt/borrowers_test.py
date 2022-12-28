@@ -11,12 +11,13 @@ def create_connection():
     cursor.execute("""CREATE TABLE IF NOT EXISTS borows(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
+        email TEXT,
         book_title TEXT,
         book_return_at DATE)
         """)
     sample_data = [
-        (1, "siostra", "ksiazka1", "2022-02-22"),
-        (2, "brat", "ksiazka2", "2023-11-23")
+        (1, "siostra","stentbike7@gmail.com", "ksiazka1", "2022-02-22"),
+        (2, "brat", "seblentest@gmail.com", "ksiazka2", "2023-11-23")
     ]
     cursor.executemany("INSERT INTO borows VALUES (?, ?, ?, ?)", sample_data)
     return connection
