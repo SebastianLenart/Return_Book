@@ -4,17 +4,22 @@ from collections import namedtuple
 from datetime import datetime
 from borowers import get_borowers_by_return_date
 import email
+from dotenv import load_dotenv
+from os import getenv
 from emails import EmailSender, Credentials
 from string import Template
 
-ssl_enable = False
-port = 2525
-smtp_serwer = "smtp.mailtrap.io"
-username = "2e1cea1609e7ab"
-password = "abe1005125a3ee"
+load_dotenv()
+connection = sqlite3.connect(getenv("DB_NAME"))
 
-subject = "Oddaj ksiazke2"
-sender = "Seba Lenart <stentbike7@gmail.com>"
+ssl_enable = getenv("SSL_ENABLE", False)
+port = getenv("PORT")
+smtp_serwer = getenv("SMTP_SERVER")
+username = getenv("MAIL_USERNAME")
+password = getenv("PASSWORD")
+
+subject = getenv("SUBJECT")
+sender = getenv("SENDER")
 receiver = "Seba Lenart <seblentest@gmail.com>"
 Credentials = Credentials(username, password)
 
@@ -33,23 +38,28 @@ def setup(connection):
         """)
 
 
-connection = sqlite3.connect("database1.db")
+def send_reminder_to_borrower(borower):
+    template = Template("""Hej $name,
+    Masz moja ksiaze pt. $title.
+    Data zwrotu minela $book_return_at
+    """)
 
-borowers = get_borowers_by_return_date(connection, datetime.today().strftime("%Y-%m-%d"))
-template = Template("""Hej $name,
-Masz moja ksiaze pt. $title.
-Data zwrotu minela $book_return_at
-""")
-with EmailSender(port, smtp_serwer, Credentials) as connection:
-    for borower in borowers:
-        text = template.substitute({
-            "name": borower.name,
-            "title": borower.book_title,
-            "book_return_at": borower.book_return_at})
-        message = email.message_from_string(text)
-        message.set_charset("utf-8")
-        message["From"] = sender
-        message["To"] = borower.email
-        message["Subject"] = "Oddaj"
+    text = template.substitute({
+        "name": borower.name,
+        "title": borower.book_title,
+        "book_return_at": borower.book_return_at})
+    message = email.message_from_string(text)
+    message.set_charset("utf-8")
+    message["From"] = sender
+    message["To"] = borower.email
+    message["Subject"] = "Oddaj"
 
-        connection.sendmail(sender, borower.email, message)
+    connection.sendmail(sender, borower.email, message)
+    print(f"Wysylam email do {borower.email}")
+
+
+if __name__ == "__main__":
+    borowers = get_borowers_by_return_date(connection, datetime.today().strftime("%Y-%m-%d"))
+    with EmailSender(port, smtp_serwer, Credentials) as connection:
+        for borower in borowers:
+            send_reminder_to_borrower(borower)
