@@ -63,3 +63,5 @@ if __name__ == "__main__":
     with EmailSender(port, smtp_serwer, Credentials) as connection:
         for borower in borowers:
             send_reminder_to_borrower(borower)
+
+# zmiana1
