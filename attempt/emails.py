@@ -5,6 +5,8 @@ Credentials = namedtuple("Credentials", "username password")
 
 
 class EmailSender:
+    test = 1 # pprint(EmailSender.__dict__) in main
+
     def __init__(self, port, smtp_address, credentials, ssl_enabled=False):
         self.port = port
         self.smtp_address = smtp_address
