@@ -1,4 +1,6 @@
 import sqlite3
+from pprint import pprint
+
 from database import Database
 from collections import namedtuple
 from datetime import datetime
@@ -63,5 +65,6 @@ if __name__ == "__main__":
     with EmailSender(port, smtp_serwer, Credentials) as connection:
         for borower in borowers:
             send_reminder_to_borrower(borower)
+    pprint(EmailSender.__dict__)
 
 # zmiana1
