@@ -1,6 +1,7 @@
 """
 Return book
 """
+from datetime import datetime
 from databasePS import Database
 from models.book import Book
 from models.borrower import Borrower
@@ -33,7 +34,10 @@ class Menu():
     def add_book(self, db):
         title = input("Enter book title: ")
         author = input("Enter book author: ")
-        date_release = input("Enter book date_release: ")
+        date_release = input("Enter book date_release (DD-MM-YYYY): ")
+        date_release = datetime.strptime(date_release, "%d-%m-%Y")
+        date_release = date_release.strftime("%d-%m-%Y")
+        print(date_release[:10], type(date_release))
         book = Book(title, author, date_release)
         book.save(db)
 

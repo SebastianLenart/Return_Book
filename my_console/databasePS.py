@@ -7,10 +7,13 @@ from configparser import ConfigParser
 from psycopg2.pool import SimpleConnectionPool
 
 CREATE_BOOKS = """CREATE TABLE IF NOT EXISTS books
-(book_id SERIAL PRIMARY KEY, title TEXT, author TEXT, date_release INTEGER, is_borrow TEXT);"""
+(book_id SERIAL PRIMARY KEY, title TEXT, author TEXT, date_release TEXT, is_borrow TEXT);"""
 CREATE_BORROWER = """CREATE TABLE IF NOT EXISTS borrower
 (borrower_id SERIAL PRIMARY KEY, first_name TEXT, last_name TEXT, email TEXT, debt INTEGER, book_id INTEGER, 
 FOREIGN KEY(book_id) REFERENCES books (book_id));"""
+
+INSERT_BOOK_RETURN_ID = """INSERT INTO books (title, author, date_release, is_borrow) VALUES (%s, %s, %s, %s) 
+RETURNING book_id;"""
 
 
 class Database:
@@ -36,7 +39,7 @@ class Database:
             with self.connection.cursor() as cursor:
                 yield cursor
 
-    def config(self, filename='.env', section='postgresql'): # zbedne database.ini
+    def config(self, filename='.env', section='postgresql'):  # zbedne database.ini
         # create a parser
         parser = ConfigParser()
         # read config file
@@ -60,7 +63,8 @@ class Database:
             cursor.execute(CREATE_BOOKS)
             cursor.execute(CREATE_BORROWER)
 
-    def add_book(self):
-        pass
-
-
+    def add_book(self, title, author, date_release, is_borrow):
+        print(date_release, type(date_release))
+        with self.get_cursor() as cursor:
+            cursor.execute(INSERT_BOOK_RETURN_ID, (title, author, date_release, is_borrow))
+            return cursor.fetchone()[0]
