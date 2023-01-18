@@ -60,4 +60,7 @@ class Database:
             cursor.execute(CREATE_BOOKS)
             cursor.execute(CREATE_BORROWER)
 
+    def add_book(self):
+        pass
+
 
