@@ -15,6 +15,8 @@ FOREIGN KEY(book_id) REFERENCES books (book_id));"""
 INSERT_BOOK_RETURN_ID = """INSERT INTO books (title, author, date_release, is_borrow) VALUES (%s, %s, %s, %s) 
 RETURNING book_id;"""
 
+SELECT_ALL_BOOKS = """SELECT * FROM books;"""
+
 
 class Database:
     def __init__(self):
@@ -64,7 +66,11 @@ class Database:
             cursor.execute(CREATE_BORROWER)
 
     def add_book(self, title, author, date_release, is_borrow):
-        print(date_release, type(date_release))
         with self.get_cursor() as cursor:
             cursor.execute(INSERT_BOOK_RETURN_ID, (title, author, date_release, is_borrow))
             return cursor.fetchone()[0]
+
+    def get_books(self): # -> List["Books"]: dopkoncz to !!!
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_ALL_BOOKS)
+            return cursor.fetchall()
