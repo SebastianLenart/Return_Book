@@ -2,7 +2,7 @@ from datetime import datetime
 
 
 class Book:
-    def __init__(self, title: str, author: str, date_release: str, is_borrow: str = "Nooo", book_id: int = None):
+    def __init__(self, title: str, author: str, date_release: str, is_borrow: str = "No", book_id: int = None):
         self.book_id = book_id,
         self.title = title,
         self.author = author,
@@ -17,5 +17,6 @@ class Book:
         books = db.get_books()
         return [cls(book[1], book[2], book[3], book[4], book[0]) for book in books]
 
-    def __repr__(self):
-        return f"{self.is_borrow}"
+    @classmethod
+    def get_all_by_title(cls, db):
+        books = db.

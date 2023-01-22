@@ -16,6 +16,7 @@ INSERT_BOOK_RETURN_ID = """INSERT INTO books (title, author, date_release, is_bo
 RETURNING book_id;"""
 
 SELECT_ALL_BOOKS = """SELECT * FROM books;"""
+SELECT_ALL_BOOKS_BY_TITLE = """  """
 
 
 class Database:
@@ -73,4 +74,9 @@ class Database:
     def get_books(self): # -> List["Books"]: dopkoncz to !!!
         with self.get_cursor() as cursor:
             cursor.execute(SELECT_ALL_BOOKS)
+            return cursor.fetchall()
+
+    def get_books_by_title(self):
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_ALL_BOOKS_BY_TITLE)
             return cursor.fetchall()

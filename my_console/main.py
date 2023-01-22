@@ -29,8 +29,8 @@ class Menu():
         }
 
     def list_of_books(self, db):
+        print("List of books:")
         for book in Book.get_all(db):
-            print("List of books:")
             print(str(book.book_id[0])+":", book.title[0], # nie wiem cze is_borrow nie jest tupla ???!!!
                   book.author[0], book.date_release[0], book.is_borrow)
 
@@ -43,6 +43,10 @@ class Menu():
         print(date_release[:10], type(date_release))
         book = Book(title, author, date_release[:10])
         book.save(db)
+
+    def remove_book(self, db):
+        title = input("Enter book title you want to remove: ")
+        
 
     def start(self):
         with Database() as db:
