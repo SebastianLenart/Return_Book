@@ -14,9 +14,15 @@ FOREIGN KEY(book_id) REFERENCES books (book_id));"""
 
 INSERT_BOOK_RETURN_ID = """INSERT INTO books (title, author, date_release, is_borrow) VALUES (%s, %s, %s, %s) 
 RETURNING book_id;"""
+INSERT_BORROWER_RETURN_ID = """INSERT INTO borrower (first_name, last_name, email,
+debt, book_id;"""
 
 SELECT_ALL_BOOKS = """SELECT * FROM books;"""
 SELECT_ALL_BOOKS_BY_TITLE = """SELECT * FROM books WHERE title = %s;"""
+SELECT_ALL_BORROWERS = """SELECT * FROM borrowers;"""
+
+DELETE_ROW_BY_TITLE = """DELETE FROM books WHERE title=%s RETURNING*;"""
+DELETE_ROW_BY_ID = """DELETE FROM books WHERE book_id=%s RETURNING*;"""
 
 
 class Database:
@@ -71,7 +77,7 @@ class Database:
             cursor.execute(INSERT_BOOK_RETURN_ID, (title, author, date_release, is_borrow))
             return cursor.fetchone()[0]
 
-    def get_books(self): # -> List["Books"]: dopkoncz to !!!
+    def get_books(self):  # -> List["Books"]: dopkoncz to !!!
         with self.get_cursor() as cursor:
             cursor.execute(SELECT_ALL_BOOKS)
             return cursor.fetchall()
@@ -79,4 +85,24 @@ class Database:
     def get_books_by_title(self, title):
         with self.get_cursor() as cursor:
             cursor.execute(SELECT_ALL_BOOKS_BY_TITLE, (title,))
+            return cursor.fetchall()
+
+    def remove_book_by_title(self, title):
+        with self.get_cursor() as cursor:
+            cursor.execute(DELETE_ROW_BY_TITLE, (title,))
+            return cursor.fetchall()[0]
+
+    def remove_book_by_id(self, id):
+        with self.get_cursor() as cursor:
+            cursor.execute(DELETE_ROW_BY_ID, (id,))
+            return cursor.fetchall()[0]
+
+    def add_borrower(self, first_name, last_name, email, debt, book_id):
+        with self.get_cursor() as cursor:
+            cursor.execute(INSERT_BORROWER_RETURN_ID, (first_name, last_name, email, debt, book_id))
+            return cursor.fetchone()[0]
+
+    def get_all_borrowers(self):
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_ALL_BORROWERS)
             return cursor.fetchall()
