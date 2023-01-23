@@ -25,14 +25,20 @@ class Menu():
     def __init__(self):
         self.menu_options = {
             "1": self.list_of_books,
-            "2": self.add_book
+            "2": self.add_book,
+            "3": self.remove_book
         }
 
     def list_of_books(self, db):
         print("List of books:")
-        for book in Book.get_all(db):
-            print(str(book.book_id[0])+":", book.title[0], # nie wiem cze is_borrow nie jest tupla ???!!!
+        self.print_books(Book.get_all(db))
+
+    @staticmethod
+    def print_books(books):
+        for book in books:
+            print(str(book.book_id[0]) + ":", book.title[0],  # nie wiem cze is_borrow nie jest tupla ???!!!
                   book.author[0], book.date_release[0], book.is_borrow)
+
 
     def add_book(self, db):
         title = input("Enter book title: ")
@@ -46,7 +52,7 @@ class Menu():
 
     def remove_book(self, db):
         title = input("Enter book title you want to remove: ")
-        
+        self.print_books(Book.get_all_by_title(db, title))
 
     def start(self):
         with Database() as db:

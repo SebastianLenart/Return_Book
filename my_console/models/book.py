@@ -18,5 +18,6 @@ class Book:
         return [cls(book[1], book[2], book[3], book[4], book[0]) for book in books]
 
     @classmethod
-    def get_all_by_title(cls, db):
-        books = db.
+    def get_all_by_title(cls, db, title):
+        books = db.get_books_by_title(title)
+        return [cls(book[1], book[2], book[3], book[4], book[0]) for book in books]
