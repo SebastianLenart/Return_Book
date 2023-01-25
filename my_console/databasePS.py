@@ -15,11 +15,11 @@ FOREIGN KEY(book_id) REFERENCES books (book_id));"""
 INSERT_BOOK_RETURN_ID = """INSERT INTO books (title, author, date_release, is_borrow) VALUES (%s, %s, %s, %s) 
 RETURNING book_id;"""
 INSERT_BORROWER_RETURN_ID = """INSERT INTO borrower (first_name, last_name, email,
-debt, book_id;"""
+debt, book_id) VALUES (%s, %s, %s, %s, %s) RETURNING borrower_id;"""
 
 SELECT_ALL_BOOKS = """SELECT * FROM books;"""
 SELECT_ALL_BOOKS_BY_TITLE = """SELECT * FROM books WHERE title = %s;"""
-SELECT_ALL_BORROWERS = """SELECT * FROM borrowers;"""
+SELECT_ALL_BORROWERS = """SELECT * FROM borrower ORDER BY borrower_id;"""
 
 DELETE_ROW_BY_TITLE = """DELETE FROM books WHERE title=%s RETURNING*;"""
 DELETE_ROW_BY_ID = """DELETE FROM books WHERE book_id=%s RETURNING*;"""

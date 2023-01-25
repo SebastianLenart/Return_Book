@@ -66,7 +66,8 @@ class Menu():
 
     def list_of_borrowers(self, db):
         for borrower in Borrower.get_all_borrowers(db):
-            print(borrower.borrower_id, ": ", borrower.first_name, borrower.email, borrower.debt)
+            print(borrower.borrower_id, ": ", borrower.first_name[0],
+                  borrower.email[0], borrower.debt[0], borrower.book_id[0])
 
     @staticmethod
     def add_borrower(db):

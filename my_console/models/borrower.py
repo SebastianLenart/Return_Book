@@ -13,5 +13,5 @@ class Borrower:
 
     @classmethod
     def get_all_borrowers(cls, db):
-        return [cls(borrower.first_name, borrower.last_name, borrower.email, borrower.debt,
-                    borrower.book_id, borrower.borrower_id) for borrower in db.get_all_borrowers()]
+        return [cls(borrower[1], borrower[2], borrower[3], borrower[4],
+                    borrower[5], borrower[0]) for borrower in db.get_all_borrowers()]
