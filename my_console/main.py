@@ -28,7 +28,8 @@ class Menu():
             "2": self.add_book,
             "3": self.remove_book,
             "4": self.list_of_borrowers,
-            "5": self.add_borrower
+            "5": self.add_borrower,
+            "6": self.remove_borrower
         }
 
     def list_of_books(self, db):
@@ -65,9 +66,17 @@ class Menu():
             self.print_books("Deleted book: ", Book.remove_book(db, id, 2))
 
     def list_of_borrowers(self, db):
+        # self.print_borrowers("List of borrowers: ", Borrower.get_all_borrowers(db))
+
         for borrower in Borrower.get_all_borrowers(db):
             print(borrower.borrower_id, ": ", borrower.first_name[0],
                   borrower.email[0], borrower.debt[0], borrower.book_id[0])
+
+    def print_borrowers(self, message, borrowers):
+        print(message)
+        for book in borrowers:
+            # print(str(book.book_id[0]) + ":", book.title[0],  # nie wiem cze is_borrow nie jest tupla ???!!!
+            #       book.author[0], book.date_release[0], book.is_borrow)
 
     @staticmethod
     def add_borrower(db):
@@ -75,6 +84,20 @@ class Menu():
         last_name = input("Enter last name: ")
         email = input("Enter email: ")
         Borrower(first_name, last_name, email).save(db)
+
+    def remove_borrower(self, db):
+        first_name = input("Enter first name: ")
+        last_name = input("Enter last name: ")
+        if len(Borrower.get_borrowers_by_name(db, first_name, last_name)) == 0:
+            print("Not found borrower")
+            return
+        elif len(Borrower.get_borrowers_by_name(db, first_name, last_name)) == 1:
+            self.print_books("Deleted book: ", Book.remove_book(db, title))
+        else:
+            self.print_books("List of books you want to delete: ", Book.get_all_by_title(db, title))
+            id = input("Enter book's id you want to remove: ")
+            self.print_books("Deleted book: ", Book.remove_book(db, id, 2))
+
 
     def start(self):
         with Database() as db:

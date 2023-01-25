@@ -15,3 +15,11 @@ class Borrower:
     def get_all_borrowers(cls, db):
         return [cls(borrower[1], borrower[2], borrower[3], borrower[4],
                     borrower[5], borrower[0]) for borrower in db.get_all_borrowers()]
+
+    @classmethod
+    def get_borrowers_by_name(cls, db, fname, lname):
+        return [cls(borrower[1], borrower[2], borrower[3], borrower[4],
+                    borrower[5], borrower[0]) for borrower in db.get_borrowers_by_name(fname, lname)]
+    @classmethod
+    def remove_borrower(cls):
+        pass
