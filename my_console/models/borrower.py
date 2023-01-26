@@ -20,6 +20,13 @@ class Borrower:
     def get_borrowers_by_name(cls, db, fname, lname):
         return [cls(borrower[1], borrower[2], borrower[3], borrower[4],
                     borrower[5], borrower[0]) for borrower in db.get_borrowers_by_name(fname, lname)]
+
     @classmethod
-    def remove_borrower(cls):
-        pass
+    def remove_borrower(cls, db, first_param: str = None, second_param: str = None, mode: int = 1):
+        return_borrower = None
+        if mode == 1:
+            return_borrower = db.remove_borrowers_by_name(first_param, second_param)
+        elif mode == 2:
+            return_borrower = db.remove_borrowers_by_id(first_param)
+        return [cls(return_borrower[1], return_borrower[2], return_borrower[3], return_borrower[4],
+                    return_borrower[5], return_borrower[0])]

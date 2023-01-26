@@ -28,6 +28,7 @@ DELETE_BORROWER_BY_NAME = """DELETE FROM borrower WHERE first_name = %s AND last
 RETURNING*;"""
 DELETE_BORROWER_BY_ID = """DELETE FROM borrower WHERE borrower_id = %s RETURNING*; """
 
+
 class Database:
     def __init__(self):
         params = self.config()
@@ -118,4 +119,9 @@ class Database:
     def remove_borrowers_by_name(self, fname, lname):
         with self.get_cursor() as cursor:
             cursor.execute(DELETE_BORROWER_BY_NAME, (fname, lname))
+            return cursor.fetchall()[0]
+
+    def remove_borrowers_by_id(self, id):
+        with self.get_cursor() as cursor:
+            cursor.execute(DELETE_BORROWER_BY_ID, (id,))
             return cursor.fetchall()[0]
