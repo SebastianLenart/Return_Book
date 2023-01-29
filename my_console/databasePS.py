@@ -11,16 +11,24 @@ CREATE_BOOKS = """CREATE TABLE IF NOT EXISTS books
 CREATE_BORROWER = """CREATE TABLE IF NOT EXISTS borrower
 (borrower_id SERIAL PRIMARY KEY, first_name TEXT, last_name TEXT, email TEXT, debt INTEGER, book_id INTEGER, 
 FOREIGN KEY(book_id) REFERENCES books (book_id));"""
+CREATE_PLACES = """CREATE TABLE IF NOT EXISTS places
+(place_id SERIAL PRIMARY KEY, rack TEXT, shelf TEXT, book_id INTEGER, 
+FOREIGN KEY(book_id) REFERENCES books (book_id)); """
 
-INSERT_BOOK_RETURN_ID = """INSERT INTO books (title, author, date_release, is_borrow) VALUES (%s, %s, %s, %s) 
-RETURNING book_id;"""
+INSERT_BOOK_RETURN_ID = """INSERT INTO books (title, author, date_release, is_borrow) 
+VALUES (%s, %s, %s, %s) RETURNING book_id;"""
 INSERT_BORROWER_RETURN_ID = """INSERT INTO borrower (first_name, last_name, email,
 debt, book_id) VALUES (%s, %s, %s, %s, %s) RETURNING borrower_id;"""
+INSERT_PLACE_RETURN_ID = """INSERT INTO places (rack, shelf, book_id) VALUES (%s, %s, %s)
+RETURNING place_id;"""
 
 SELECT_ALL_BOOKS = """SELECT * FROM books;"""
 SELECT_BOOKS_BY_TITLE = """SELECT * FROM books WHERE title = %s;"""
 SELECT_ALL_BORROWERS = """SELECT * FROM borrower ORDER BY borrower_id;"""
 SELECT_BORROWERS_BY_NAME = """SELECT * FROM borrower WHERE first_name = %s AND last_name = %s;"""
+SELECT_PLACE_BY_TITLE = """SELECT b.title, p.rack, p.shelf  FROM places AS p
+INNER JOIN (SELECT * FROM books WHERE books.title = %s) as b 
+ON p.book_id = b.book_id;"""
 
 DELETE_BOOK_BY_TITLE = """DELETE FROM books WHERE title=%s RETURNING*;"""
 DELETE_BOOK_BY_ID = """DELETE FROM books WHERE book_id=%s RETURNING*;"""
@@ -75,10 +83,16 @@ class Database:
         with self.get_cursor() as cursor:
             cursor.execute(CREATE_BOOKS)
             cursor.execute(CREATE_BORROWER)
+            cursor.execute(CREATE_PLACES)
 
     def add_book(self, title, author, date_release, is_borrow):
         with self.get_cursor() as cursor:
             cursor.execute(INSERT_BOOK_RETURN_ID, (title, author, date_release, is_borrow))
+            return cursor.fetchone()[0]
+
+    def add_place(self, rack, shelf, book_id):
+        with self.get_cursor() as cursor:
+            cursor.execute(INSERT_PLACE_RETURN_ID, (rack, shelf, book_id))
             return cursor.fetchone()[0]
 
     def get_books(self):  # -> List["Books"]: dopkoncz to !!!
@@ -124,4 +138,9 @@ class Database:
     def remove_borrowers_by_id(self, id):
         with self.get_cursor() as cursor:
             cursor.execute(DELETE_BORROWER_BY_ID, (id,))
+            return cursor.fetchall()[0]
+
+    def find_book_place(self, title):
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_PLACE_BY_TITLE, (title,))
             return cursor.fetchall()[0]

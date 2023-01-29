@@ -15,8 +15,8 @@ class Menu():
     4.) List of borrowers
     5.) Add a borrower
     6.) Remove a borrower
-    7.) Find a book by ..
-    8.) Find borower by ..
+    7.) Find a book in library
+    8.) Find borrower by ..
     9.) Borrow a book
     10.) Return a book
     11.) Exit
@@ -29,7 +29,9 @@ class Menu():
             "3": self.remove_book,
             "4": self.list_of_borrowers,
             "5": self.add_borrower,
-            "6": self.remove_borrower
+            "6": self.remove_borrower,
+            "7": self.find_book,
+            "8": self.find_borrower
         }
 
     def list_of_books(self, db):
@@ -48,14 +50,16 @@ class Menu():
                       borrower.debt[0], borrower.book_id[0])
 
     @staticmethod
-    def add_book(self, db):
+    def add_book(db):
         title = input("Enter book title: ")
         author = input("Enter book author: ")
         date_release = input("Enter book date_release (DD-MM-YYYY): ")
+        rack = input("Enter rack where is book: ")
+        shelf = input("Enter shelf where is book: ")
         date_release = datetime.strptime(date_release, "%d-%m-%Y")
         date_release = date_release.strftime("%d-%m-%Y")
         print(date_release[:10], type(date_release))
-        book = Book(title, author, date_release[:10])
+        book = Book(title, author, date_release[:10], rack, shelf)
         book.save(db)
 
     def remove_book(self, db):
@@ -94,7 +98,17 @@ class Menu():
                                           Borrower.get_borrowers_by_name(db, first_name, last_name), 2)
             id = input("Enter borrower's id you want to remove: ")
             self.print_books_or_borrowers("Deleted borrower: ",
-                                          Borrower.remove_borrower(db, first_param=str(id), second_param=None, mode=2), 2)
+                                          Borrower.remove_borrower(db, first_param=str(id), second_param=None, mode=2),
+                                          2)
+
+    @staticmethod
+    def find_book(db):
+        title = input("Enter the title book you want to find: ")
+        print("This is place where is your book - ", Book.find_book(db, title)[1], "\n", "rack: ",
+              Book.find_book(db, title)[1], "\n shelf: ", Book.find_book(db, title)[2])
+
+    def find_borrower(self):
+        pass
 
     def start(self):
         with Database() as db:
