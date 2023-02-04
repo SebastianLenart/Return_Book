@@ -143,4 +143,4 @@ class Database:
     def find_book_place(self, title):
         with self.get_cursor() as cursor:
             cursor.execute(SELECT_PLACE_BY_TITLE, (title,))
-            return cursor.fetchall()[0]
+            return cursor.fetchall()
