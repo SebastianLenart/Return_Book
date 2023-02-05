@@ -33,6 +33,7 @@ class Menu():
             "7": self.find_book,
             "8": self.find_borrower,
             "9": self.borrow_book,
+            "10": self.return_book
         }
 
     def list_of_books(self, db):
@@ -114,11 +115,19 @@ class Menu():
     def find_borrower(self, db):
         first_name = input("Enter first name who you find: ")
         last_name = input("Enter last name who you find: ")
-        self.print_books_or_borrowers("List of borrowers: ", Borrower.get_borrowers_by_name(db, first_name, last_name), 2)
-
-    def borrow_book(self, db):
+        self.print_books_or_borrowers("List of borrowers: ", Borrower.get_borrowers_by_name(db, first_name, last_name),
+                                      2)
+    @staticmethod
+    def borrow_book(db):
         title_book = input("Enter title book: ")
+        if len(Book.check_available_book(db, title_book)) == 0:
+            print("This book is not available now.")
+            return
+        id_borrower = input("Enter id borrower: ")
+        Borrower.borrow_book(db, id_borrower, *Book.check_available_book(db, title_book)[0])
 
+    def return_book(self, db):
+        pass
 
     def start(self):
         with Database() as db:

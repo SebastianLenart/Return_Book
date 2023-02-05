@@ -42,3 +42,7 @@ class Book:
     @staticmethod
     def find_book(db, title) -> list:
         return db.find_book_place(title)
+
+    @staticmethod
+    def check_available_book(db, title):
+        return db.check_free_book(title)
