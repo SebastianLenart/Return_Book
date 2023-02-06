@@ -30,3 +30,6 @@ class Borrower:
             return_borrower = db.remove_borrowers_by_id(first_param)
         return [cls(return_borrower[1], return_borrower[2], return_borrower[3], return_borrower[4],
                     return_borrower[5], return_borrower[0])]
+    @staticmethod
+    def borrow_book(db, id_borrower, id_book):
+        db.borrow_book(id_borrower, id_book)

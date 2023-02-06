@@ -16,7 +16,7 @@ class Menu():
     5.) Add a borrower
     6.) Remove a borrower
     7.) Find a book in library
-    8.) Find borrower by ..
+    8.) Find borrower by first name and last name
     9.) Borrow a book
     10.) Return a book
     11.) Exit
@@ -31,7 +31,9 @@ class Menu():
             "5": self.add_borrower,
             "6": self.remove_borrower,
             "7": self.find_book,
-            "8": self.find_borrower
+            "8": self.find_borrower,
+            "9": self.borrow_book,
+            "10": self.return_book
         }
 
     def list_of_books(self, db):
@@ -104,10 +106,27 @@ class Menu():
     @staticmethod
     def find_book(db):
         title = input("Enter the title book you want to find: ")
-        print("This is place where is your book - ", Book.find_book(db, title)[1], "\n", "rack: ",
-              Book.find_book(db, title)[1], "\n shelf: ", Book.find_book(db, title)[2])
+        data = Book.find_book(db, title)
+        print(data)
+        for tup in data:
+            title, rack, shelf = tup
+            print("Your book -", title, "rack:", rack, "shelf:", shelf)
 
-    def find_borrower(self):
+    def find_borrower(self, db):
+        first_name = input("Enter first name who you find: ")
+        last_name = input("Enter last name who you find: ")
+        self.print_books_or_borrowers("List of borrowers: ", Borrower.get_borrowers_by_name(db, first_name, last_name),
+                                      2)
+    @staticmethod
+    def borrow_book(db):
+        title_book = input("Enter title book: ")
+        if len(Book.check_available_book(db, title_book)) == 0:
+            print("This book is not available now.")
+            return
+        id_borrower = input("Enter id borrower: ")
+        Borrower.borrow_book(db, id_borrower, *Book.check_available_book(db, title_book)[0])
+
+    def return_book(self, db):
         pass
 
     def start(self):

@@ -17,7 +17,6 @@ class Book:
         self.book_id = db.add_book(self.title, self.author, self.date_release, self.is_borrow)
         self.place_id = db.add_place(self.rack, self.shelf, self.book_id)
 
-
     @classmethod
     def get_all(cls, db):
         books = db.get_books()
@@ -42,4 +41,8 @@ class Book:
 
     @staticmethod
     def find_book(db, title) -> list:
-        db.find_book_place(title)
+        return db.find_book_place(title)
+
+    @staticmethod
+    def check_available_book(db, title):
+        return db.check_free_book(title)
