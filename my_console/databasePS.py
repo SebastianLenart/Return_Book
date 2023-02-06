@@ -7,10 +7,10 @@ from configparser import ConfigParser
 from psycopg2.pool import SimpleConnectionPool
 
 CREATE_BOOKS = """CREATE TABLE IF NOT EXISTS books
-(book_id SERIAL PRIMARY KEY, title TEXT, author TEXT, date_release TEXT, is_borrow TEXT);"""
+(book_id SERIAL PRIMARY KEY, title TEXT, author TEXT, date_release TEXT,
+borrower_id INTEGER, FOREIGN KEY(borrower_id) REFERENCES borrower (borrower_id));"""
 CREATE_BORROWER = """CREATE TABLE IF NOT EXISTS borrower
-(borrower_id SERIAL PRIMARY KEY, first_name TEXT, last_name TEXT, email TEXT, debt INTEGER, book_id INTEGER, 
-FOREIGN KEY(book_id) REFERENCES books (book_id));"""
+(borrower_id SERIAL PRIMARY KEY, first_name TEXT, last_name TEXT, email TEXT, debt INTEGER);"""
 CREATE_PLACES = """CREATE TABLE IF NOT EXISTS places
 (place_id SERIAL PRIMARY KEY, rack TEXT, shelf TEXT, book_id INTEGER, 
 FOREIGN KEY(book_id) REFERENCES books (book_id)); """
@@ -29,6 +29,7 @@ SELECT_BORROWERS_BY_NAME = """SELECT * FROM borrower WHERE first_name = %s AND l
 SELECT_PLACE_BY_TITLE = """SELECT b.title, p.rack, p.shelf  FROM places AS p
 INNER JOIN (SELECT * FROM books WHERE books.title = %s) as b 
 ON p.book_id = b.book_id;"""
+# ponizej do lekkiej poprawy bo juz nie ma is_borrow!
 SELECT_FREE_BOOK = """SELECT books.book_id FROM books WHERE books.title = %s AND books.is_borrow = 'No' LIMIT 1;"""
 SELECT_BOOKS_ID_IN_BORROWER = """SELECT borrower.book_id FROM borrower WHERE borrower.borrower_id = %s;"""
 
@@ -40,8 +41,8 @@ RETURNING*;"""
 DELETE_BORROWER_BY_ID = """DELETE FROM borrower WHERE borrower_id = %s RETURNING*; """
 
 UPDATE_BOOKS_YES = """UPDATE books SET is_borrow = 'Yes' WHERE books.book_id = %s RETURNING books.book_id;"""
-UPDATE_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
-
+# UPDATE_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
+UPDATE_BOOKS_ID_IN_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
 
 class Database:
     def __init__(self):
@@ -87,8 +88,8 @@ class Database:
     # ------------------------------------------------------------------------------------
     def create_tables(self):
         with self.get_cursor() as cursor:
-            cursor.execute(CREATE_BOOKS)
             cursor.execute(CREATE_BORROWER)
+            cursor.execute(CREATE_BOOKS)
             cursor.execute(CREATE_PLACES)
 
     def add_book(self, title, author, date_release, is_borrow):
@@ -151,6 +152,7 @@ class Database:
             cursor.execute(SELECT_PLACE_BY_TITLE, (title,))
             return cursor.fetchall()
 
+    # ponizej do lekkiej poprawy bo juz nie ma is_borrow!
     def check_free_book(self, title):
         with self.get_cursor() as cursor:
             cursor.execute(SELECT_FREE_BOOK, (title,))
@@ -159,8 +161,15 @@ class Database:
     def borrow_book(self, id_borrower, id_book):
         with self.get_cursor() as cursor:
             cursor.execute(UPDATE_BOOKS_YES, (id_book,))
-            bufor = cursor.execute(SELECT_BOOKS_ID_IN_BORROWER, (id_borrower,))
-            print(type(bufor), bufor)
-            # cursor.execute()
+            cursor.execute(SELECT_BOOKS_ID_IN_BORROWER, (id_borrower,))
+            bufor = cursor.fetchone()[0]
+            print(bufor)
+            if bufor is None:
+                cursor.execute(UPDATE_BOOKS_ID_IN_BORROWER, (id_book, id_borrower))
+                print("None")
+            else:
+                bufor = str(bufor) + "".join(", ") + str(id_book)
+                cursor.execute(UPDATE_BOOKS_ID_IN_BORROWER, (bufor, id_borrower))
+                print("Not_None")
 
-            return cursor.fetchall()
+            # return cursor.fetchall()
