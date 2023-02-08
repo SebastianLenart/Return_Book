@@ -117,6 +117,7 @@ class Menu():
         last_name = input("Enter last name who you find: ")
         self.print_books_or_borrowers("List of borrowers: ", Borrower.get_borrowers_by_name(db, first_name, last_name),
                                       2)
+
     @staticmethod
     def borrow_book(db):
         title_book = input("Enter title book: ")
@@ -124,7 +125,7 @@ class Menu():
             print("This book is not available now.")
             return
         id_borrower = input("Enter id borrower: ")
-        Borrower.borrow_book(db, id_borrower, *Book.check_available_book(db, title_book)[0])
+        print(Borrower.borrow_book(db, id_borrower, *Book.check_available_book(db, title_book)[0]))
 
     def return_book(self, db):
         pass

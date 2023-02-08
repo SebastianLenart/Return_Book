@@ -29,20 +29,17 @@ SELECT_BORROWERS_BY_NAME = """SELECT * FROM borrower WHERE first_name = %s AND l
 SELECT_PLACE_BY_TITLE = """SELECT b.title, p.rack, p.shelf  FROM places AS p
 INNER JOIN (SELECT * FROM books WHERE books.title = %s) as b 
 ON p.book_id = b.book_id;"""
-# ponizej do lekkiej poprawy bo juz nie ma is_borrow!
-SELECT_FREE_BOOK = """SELECT books.book_id FROM books WHERE books.title = %s AND books.is_borrow = 'No' LIMIT 1;"""
-SELECT_BOOKS_ID_IN_BORROWER = """SELECT borrower.book_id FROM borrower WHERE borrower.borrower_id = %s;"""
-
-
+SELECT_FREE_BOOK = """SELECT books.book_id FROM books WHERE books.title = %s AND books.borrower_id is NULL LIMIT 1;"""
 DELETE_BOOK_BY_TITLE = """DELETE FROM books WHERE title=%s RETURNING*;"""
 DELETE_BOOK_BY_ID = """DELETE FROM books WHERE book_id=%s RETURNING*;"""
 DELETE_BORROWER_BY_NAME = """DELETE FROM borrower WHERE first_name = %s AND last_name = %s
 RETURNING*;"""
 DELETE_BORROWER_BY_ID = """DELETE FROM borrower WHERE borrower_id = %s RETURNING*; """
 
-UPDATE_BOOKS_YES = """UPDATE books SET is_borrow = 'Yes' WHERE books.book_id = %s RETURNING books.book_id;"""
+UPDATE_BOOKS_ID_BORROWER = """UPDATE books SET borrower_id = %s WHERE books.book_id = %s RETURNING books.book_id;"""
 # UPDATE_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
 UPDATE_BOOKS_ID_IN_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
+
 
 class Database:
     def __init__(self):
@@ -152,7 +149,6 @@ class Database:
             cursor.execute(SELECT_PLACE_BY_TITLE, (title,))
             return cursor.fetchall()
 
-    # ponizej do lekkiej poprawy bo juz nie ma is_borrow!
     def check_free_book(self, title):
         with self.get_cursor() as cursor:
             cursor.execute(SELECT_FREE_BOOK, (title,))
@@ -160,16 +156,5 @@ class Database:
 
     def borrow_book(self, id_borrower, id_book):
         with self.get_cursor() as cursor:
-            cursor.execute(UPDATE_BOOKS_YES, (id_book,))
-            cursor.execute(SELECT_BOOKS_ID_IN_BORROWER, (id_borrower,))
-            bufor = cursor.fetchone()[0]
-            print(bufor)
-            if bufor is None:
-                cursor.execute(UPDATE_BOOKS_ID_IN_BORROWER, (id_book, id_borrower))
-                print("None")
-            else:
-                bufor = str(bufor) + "".join(", ") + str(id_book)
-                cursor.execute(UPDATE_BOOKS_ID_IN_BORROWER, (bufor, id_borrower))
-                print("Not_None")
-
-            # return cursor.fetchall()
+            cursor.execute(UPDATE_BOOKS_ID_BORROWER, (id_borrower, id_book))
+            return cursor.fetchall()

@@ -32,4 +32,4 @@ class Borrower:
                     return_borrower[5], return_borrower[0])]
     @staticmethod
     def borrow_book(db, id_borrower, id_book):
-        db.borrow_book(id_borrower, id_book)
+        return db.borrow_book(id_borrower, id_book)
