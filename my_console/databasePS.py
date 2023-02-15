@@ -30,6 +30,13 @@ SELECT_PLACE_BY_TITLE = """SELECT b.title, p.rack, p.shelf  FROM places AS p
 INNER JOIN (SELECT * FROM books WHERE books.title = %s) as b 
 ON p.book_id = b.book_id;"""
 SELECT_FREE_BOOK = """SELECT books.book_id FROM books WHERE books.title = %s AND books.borrower_id is NULL LIMIT 1;"""
+SELECT_BORROWERS_S_BOOKS = """SELECT borrower.borrower_id, borrower.first_name, COUNT(books.borrower_id = borrower.borrower_id)
+AS amount_books FROM borrower INNER JOIN books ON books.borrower_id = borrower.borrower_id
+WHERE borrower.borrower_id = %s GROUP BY borrower.borrower_id
+ORDER BY borrower.borrower_id;"""
+SELECT_BOOKS_BY_BORROWER_ID = """SELECT * FROM books WHERE books.borrower_id = 1
+ORDER BY books.book_id;"""
+
 DELETE_BOOK_BY_TITLE = """DELETE FROM books WHERE title=%s RETURNING*;"""
 DELETE_BOOK_BY_ID = """DELETE FROM books WHERE book_id=%s RETURNING*;"""
 DELETE_BORROWER_BY_NAME = """DELETE FROM borrower WHERE first_name = %s AND last_name = %s
@@ -109,6 +116,11 @@ class Database:
             cursor.execute(SELECT_BOOKS_BY_TITLE, (title,))
             return cursor.fetchall()
 
+    def get_books_by_borrower_id(self, borrower_id):
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_BOOKS_BY_BORROWER_ID, (borrower_id,))
+            return cursor.fetchall()
+
     def remove_book_by_title(self, title):
         with self.get_cursor() as cursor:
             cursor.execute(DELETE_BOOK_BY_TITLE, (title,))
@@ -158,3 +170,8 @@ class Database:
         with self.get_cursor() as cursor:
             cursor.execute(UPDATE_BOOKS_ID_BORROWER, (id_borrower, id_book))
             return cursor.fetchall()
+
+    def borrower_s_books(self, id_borrower=1):
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_BORROWERS_S_BOOKS, (id_borrower,))
+            return cursor.fetchall()[0]

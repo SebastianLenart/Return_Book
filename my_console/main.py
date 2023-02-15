@@ -45,7 +45,7 @@ class Menu():
         if mode == 1:  # books
             for book in content:
                 print(str(book.book_id[0]) + ":", book.title[0],  # nie wiem cze is_borrow nie jest tupla ???!!!
-                      book.author[0], book.date_release[0], book.is_borrow)
+                      book.author[0], book.date_release[0], book.borrower_id)
         elif mode == 2:  # borrowers
             for borrower in content:
                 print(str(borrower.borrower_id) + ":", borrower.first_name[0], borrower.last_name[0], borrower.email[0],
@@ -118,14 +118,22 @@ class Menu():
         self.print_books_or_borrowers("List of borrowers: ", Borrower.get_borrowers_by_name(db, first_name, last_name),
                                       2)
 
-    @staticmethod
-    def borrow_book(db):
+    def borrow_book(self, db):
         title_book = input("Enter title book: ")
         if len(Book.check_available_book(db, title_book)) == 0:
             print("This book is not available now.")
             return
         id_borrower = input("Enter id borrower: ")
-        print(Borrower.borrow_book(db, id_borrower, *Book.check_available_book(db, title_book)[0]))
+        if (Book.check_available_book(db, title_book)[0] == Borrower.borrow_book(db, id_borrower, *
+        Book.check_available_book(db, title_book)[0])[0]):
+            print("OK")
+        else:
+            print("something it's wrong")
+        borrower_id, first_name, amount_of_books = db.borrower_s_books(id_borrower)
+        print("ID borrower:", borrower_id, "First name:", first_name, "amount_of_books:", amount_of_books)
+
+        # ponizej do poprawy!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # self.print_books_or_borrowers(f"List of books:", content=db.get_books_by_borrower_id(borrower_id))
 
     def return_book(self, db):
         pass

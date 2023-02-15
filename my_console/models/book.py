@@ -3,12 +3,12 @@ from datetime import datetime
 
 class Book:
     def __init__(self, title: str, author: str, date_release: str, rack: str, shelf: str,
-                 is_borrow: str = "No", book_id: int = None):
+                 borrower_id: int = None, book_id: int = None):
         self.book_id = book_id,
         self.title = title,
         self.author = author,
         self.date_release = date_release,
-        self.is_borrow = is_borrow
+        self.borrower_id = borrower_id
         self.rack = rack,
         self.shelf = shelf
         self.place_id = None
