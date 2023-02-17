@@ -22,7 +22,8 @@ debt, book_id) VALUES (%s, %s, %s, %s, %s) RETURNING borrower_id;"""
 INSERT_PLACE_RETURN_ID = """INSERT INTO places (rack, shelf, book_id) VALUES (%s, %s, %s)
 RETURNING place_id;"""
 
-SELECT_ALL_BOOKS = """SELECT * FROM books;"""
+SELECT_ALL_BOOKS = """SELECT * FROM books ORDER BY books.book_id;"""
+SELECT_ALL_PLACES = """SELECT * FROM places ORDER BY places.book_id;"""
 SELECT_BOOKS_BY_TITLE = """SELECT * FROM books WHERE title = %s;"""
 SELECT_ALL_BORROWERS = """SELECT * FROM borrower ORDER BY borrower_id;"""
 SELECT_BORROWERS_BY_NAME = """SELECT * FROM borrower WHERE first_name = %s AND last_name = %s;"""
@@ -34,8 +35,9 @@ SELECT_BORROWERS_S_BOOKS = """SELECT borrower.borrower_id, borrower.first_name, 
 AS amount_books FROM borrower INNER JOIN books ON books.borrower_id = borrower.borrower_id
 WHERE borrower.borrower_id = %s GROUP BY borrower.borrower_id
 ORDER BY borrower.borrower_id;"""
-SELECT_BOOKS_BY_BORROWER_ID = """SELECT * FROM books WHERE books.borrower_id = 1
+SELECT_BOOKS_BY_BORROWER_ID = """SELECT * FROM books WHERE books.borrower_id = %s
 ORDER BY books.book_id;"""
+SELECT_PLACE_BY_BOOK_ID = """SELECT * FROM places WHERE places.book_id = %s;"""
 
 DELETE_BOOK_BY_TITLE = """DELETE FROM books WHERE title=%s RETURNING*;"""
 DELETE_BOOK_BY_ID = """DELETE FROM books WHERE book_id=%s RETURNING*;"""
@@ -111,6 +113,11 @@ class Database:
             cursor.execute(SELECT_ALL_BOOKS)
             return cursor.fetchall()
 
+    def get_places(self):  # -> List["Books"]: dopkoncz to !!!
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_ALL_PLACES)
+            return cursor.fetchall()
+
     def get_books_by_title(self, title):
         with self.get_cursor() as cursor:
             cursor.execute(SELECT_BOOKS_BY_TITLE, (title,))
@@ -119,6 +126,11 @@ class Database:
     def get_books_by_borrower_id(self, borrower_id):
         with self.get_cursor() as cursor:
             cursor.execute(SELECT_BOOKS_BY_BORROWER_ID, (borrower_id,))
+            return cursor.fetchall()
+
+    def get_place_book_by_book_id(self, book_id):
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_PLACE_BY_BOOK_ID, (book_id,)) ######################
             return cursor.fetchall()
 
     def remove_book_by_title(self, title):

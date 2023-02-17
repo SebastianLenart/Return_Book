@@ -125,15 +125,13 @@ class Menu():
             return
         id_borrower = input("Enter id borrower: ")
         if (Book.check_available_book(db, title_book)[0] == Borrower.borrow_book(db, id_borrower, *
-        Book.check_available_book(db, title_book)[0])[0]):
+            Book.check_available_book(db, title_book)[0])[0]):
             print("OK")
         else:
             print("something it's wrong")
         borrower_id, first_name, amount_of_books = db.borrower_s_books(id_borrower)
         print("ID borrower:", borrower_id, "First name:", first_name, "amount_of_books:", amount_of_books)
-
-        # ponizej do poprawy!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # self.print_books_or_borrowers(f"List of books:", content=db.get_books_by_borrower_id(borrower_id))
+        self.print_books_or_borrowers(f"List of books:", content=Book.get_all_by_borrower_id(db, borrower_id))
 
     def return_book(self, db):
         pass
