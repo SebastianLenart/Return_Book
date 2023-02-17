@@ -19,7 +19,9 @@ class Menu():
     8.) Find borrower by first name and last name
     9.) Borrow a book
     10.) Return a book
-    11.) Exit
+    11.) Student's list of books
+    
+    12.) Exit
     Enter your choice: """
 
     def __init__(self):
@@ -34,6 +36,7 @@ class Menu():
             "8": self.find_borrower,
             "9": self.borrow_book,
             "10": self.return_book
+            "11": self.student_list_of_books
         }
 
     def list_of_books(self, db):
@@ -134,6 +137,9 @@ class Menu():
         self.print_books_or_borrowers(f"List of books:", content=Book.get_all_by_borrower_id(db, borrower_id))
 
     def return_book(self, db):
+        pass
+
+    def student_list_of_books(self, db):
         pass
 
     def start(self):
