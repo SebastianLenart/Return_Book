@@ -35,8 +35,8 @@ class Menu():
             "7": self.find_book,
             "8": self.find_borrower,
             "9": self.borrow_book,
-            "10": self.return_book
-            "11": self.student_list_of_books
+            "10": self.return_book,
+            "11": self.list_of_books_borrower
         }
 
     def list_of_books(self, db):
@@ -106,6 +106,7 @@ class Menu():
                                           Borrower.remove_borrower(db, first_param=str(id), second_param=None, mode=2),
                                           2)
 
+    # POPRAW JAK JEST WYPOZYCZONA TO U KOGO A JAK NIE JEST TO NA JAKIEJ SZAFCE
     @staticmethod
     def find_book(db):
         title = input("Enter the title book you want to find: ")
@@ -128,25 +129,31 @@ class Menu():
             return
         id_borrower = input("Enter id borrower: ")
         if (Book.check_available_book(db, title_book)[0] == Borrower.borrow_book(db, id_borrower, *
-            Book.check_available_book(db, title_book)[0])[0]):
+        Book.check_available_book(db, title_book)[0])[0]):
             print("OK")
         else:
             print("something it's wrong")
+        self.student_list_of_books(db, id_borrower)
+
+    def return_book(self, db):
+        borrower_id = input("Enter your borrower_id: ")
+        book_id = input("Enter book_id you want to return: ")
+        self.print_books_or_borrowers("Return book is:", content=Book.return_book(db, borrower_id, book_id))
+
+    def list_of_books_borrower(self, db):
+        id_borrower = input("Enter borrower id: ")
+        self.student_list_of_books(db, id_borrower)
+
+    def student_list_of_books(self, db, id_borrower):
         borrower_id, first_name, amount_of_books = db.borrower_s_books(id_borrower)
         print("ID borrower:", borrower_id, "First name:", first_name, "amount_of_books:", amount_of_books)
         self.print_books_or_borrowers(f"List of books:", content=Book.get_all_by_borrower_id(db, borrower_id))
-
-    def return_book(self, db):
-        pass
-
-    def student_list_of_books(self, db):
-        pass
 
     def start(self):
         with Database() as db:
             db.create_tables()
 
-        while (selection := input(self.MENU)) != "11":
+        while (selection := input(self.MENU)) != "12":
             try:
                 self.menu_options[selection](db)
             except KeyError:

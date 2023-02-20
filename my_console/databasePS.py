@@ -24,7 +24,7 @@ RETURNING place_id;"""
 
 SELECT_ALL_BOOKS = """SELECT * FROM books ORDER BY books.book_id;"""
 SELECT_ALL_PLACES = """SELECT * FROM places ORDER BY places.book_id;"""
-SELECT_BOOKS_BY_TITLE = """SELECT * FROM books WHERE title = %s;"""
+SELECT_BOOKS_BY_TITLE = """SELECT * FROM books WHERE title = %s ORDER BY books.book_id;"""
 SELECT_ALL_BORROWERS = """SELECT * FROM borrower ORDER BY borrower_id;"""
 SELECT_BORROWERS_BY_NAME = """SELECT * FROM borrower WHERE first_name = %s AND last_name = %s;"""
 SELECT_PLACE_BY_TITLE = """SELECT b.title, p.rack, p.shelf  FROM places AS p
@@ -37,7 +37,11 @@ WHERE borrower.borrower_id = %s GROUP BY borrower.borrower_id
 ORDER BY borrower.borrower_id;"""
 SELECT_BOOKS_BY_BORROWER_ID = """SELECT * FROM books WHERE books.borrower_id = %s
 ORDER BY books.book_id;"""
-SELECT_PLACE_BY_BOOK_ID = """SELECT * FROM places WHERE places.book_id = %s;"""
+SELECT_PLACE_BY_BORROWER_ID = """SELECT places.place_id, places.rack, places.shelf FROM places
+INNER JOIN books ON books.book_id = places.book_id WHERE books.borrower_id = %s ORDER BY books.book_id;"""
+SELECT_PLACE_BY_BOOK_TITLE = """SELECT places.place_id, places.rack, places.shelf FROM places
+INNER JOIN books ON books.book_id = places.book_id WHERE books.title = %s ORDER BY books.book_id;"""
+
 
 DELETE_BOOK_BY_TITLE = """DELETE FROM books WHERE title=%s RETURNING*;"""
 DELETE_BOOK_BY_ID = """DELETE FROM books WHERE book_id=%s RETURNING*;"""
@@ -46,6 +50,8 @@ RETURNING*;"""
 DELETE_BORROWER_BY_ID = """DELETE FROM borrower WHERE borrower_id = %s RETURNING*; """
 
 UPDATE_BOOKS_ID_BORROWER = """UPDATE books SET borrower_id = %s WHERE books.book_id = %s RETURNING books.book_id;"""
+RETURN_BOOK = """UPDATE books SET borrower_id = NULL WHERE borrower_id = %s AND books.book_id = %s 
+RETURNING *;"""
 # UPDATE_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
 UPDATE_BOOKS_ID_IN_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
 
@@ -128,9 +134,14 @@ class Database:
             cursor.execute(SELECT_BOOKS_BY_BORROWER_ID, (borrower_id,))
             return cursor.fetchall()
 
-    def get_place_book_by_book_id(self, book_id):
+    def get_places_book_by_borrower_id(self, borrower_id):
         with self.get_cursor() as cursor:
-            cursor.execute(SELECT_PLACE_BY_BOOK_ID, (book_id,)) ######################
+            cursor.execute(SELECT_PLACE_BY_BORROWER_ID, (borrower_id,))
+            return cursor.fetchall()
+
+    def get_places_book_by_title_book(self, title):
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_PLACE_BY_BOOK_TITLE, (title,))
             return cursor.fetchall()
 
     def remove_book_by_title(self, title):
@@ -187,3 +198,8 @@ class Database:
         with self.get_cursor() as cursor:
             cursor.execute(SELECT_BORROWERS_S_BOOKS, (id_borrower,))
             return cursor.fetchall()[0]
+
+    def return_book(self, borrower_id, book_id):
+        with self.get_cursor() as cursor:
+            cursor.execute(RETURN_BOOK, (borrower_id, book_id))
+            return cursor.fetchall()

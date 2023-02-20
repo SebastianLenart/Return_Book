@@ -27,13 +27,13 @@ class Book:
     @classmethod
     def get_all_by_title(cls, db, title):
         books = db.get_books_by_title(title)
-        places = db.get_place_book_by_book_id(books[0][0])
+        places = db.get_places_book_by_title_book(title)
         return [cls(book[1], book[2], book[3], place[1], place[2], borrower_id=book[4], book_id=book[0]) for book, place
                 in zip(books, places)]
     @classmethod
     def get_all_by_borrower_id(cls, db, borrower_id):
         books = db.get_books_by_borrower_id(borrower_id)
-        places = db.get_place_book_by_book_id(books[0][0])
+        places = db.get_places_book_by_borrower_id(borrower_id)
         return [cls(book[1], book[2], book[3], place[1], place[2], borrower_id=book[4], book_id=book[0]) for book, place
                 in zip(books, places)]
 
@@ -56,3 +56,38 @@ class Book:
     @staticmethod
     def check_available_book(db, title):
         return db.check_free_book(title)
+
+
+
+    @classmethod
+    def return_book(cls, db, borrower_id, book_id):
+        book = db.return_book(borrower_id, book_id)[0]
+        place = db.get_place_book_by_book_id(book[0])[0]
+        return [cls(book[1], book[2], book[3], place[1], place[2], borrower_id=book[4], book_id=book[0])]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
