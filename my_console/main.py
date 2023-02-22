@@ -27,7 +27,7 @@ class Menu():
     def __init__(self):
         self.menu_options = {
             "1": self.list_of_books,
-            "2": self.add_book,
+            "2": self.add_book, # tu jest problem
             "3": self.remove_book,
             "4": self.list_of_borrowers,
             "5": self.add_borrower,
