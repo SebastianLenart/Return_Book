@@ -45,10 +45,13 @@ class Menu():
     @staticmethod
     def print_books_or_borrowers(message, content, mode: int = 1):
         print(message)
+        if len(content) == 0:
+            print("Empty")
+            return
         if mode == 1:  # books
             for book in content:
                 print(str(book.book_id[0]) + ":", book.title[0],  # nie wiem cze is_borrow nie jest tupla ???!!!
-                      book.author[0], book.date_release[0], book.borrower_id)
+                      book.author[0], book.date_release[0], book.borrower_id, book.rental_date[0], book.return_date)
         elif mode == 2:  # borrowers
             for borrower in content:
                 print(str(borrower.borrower_id) + ":", borrower.first_name[0], borrower.last_name[0], borrower.email[0],
@@ -63,8 +66,9 @@ class Menu():
         shelf = input("Enter shelf where is book: ")
         date_release = datetime.strptime(date_release, "%d-%m-%Y")
         date_release = date_release.strftime("%d-%m-%Y")
-        print(date_release[:10], type(date_release))
-        book = Book(title, author, date_release[:10], rack, shelf)
+        rental_date = date_release
+        return_date = date_release
+        book = Book(title, author, date_release[:10], rack, shelf, rental_date, return_date)
         book.save(db)
 
     def remove_book(self, db):

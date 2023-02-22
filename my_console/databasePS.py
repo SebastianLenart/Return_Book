@@ -8,15 +8,15 @@ from psycopg2.pool import SimpleConnectionPool
 
 CREATE_BOOKS = """CREATE TABLE IF NOT EXISTS books
 (book_id SERIAL PRIMARY KEY, title TEXT, author TEXT, date_release TEXT,
-borrower_id INTEGER, FOREIGN KEY(borrower_id) REFERENCES borrower (borrower_id));"""
+borrower_id INTEGER, rental_date DATE, return_date DATE, FOREIGN KEY(borrower_id) REFERENCES borrower (borrower_id));"""
 CREATE_BORROWER = """CREATE TABLE IF NOT EXISTS borrower
 (borrower_id SERIAL PRIMARY KEY, first_name TEXT, last_name TEXT, email TEXT, debt INTEGER);"""
 CREATE_PLACES = """CREATE TABLE IF NOT EXISTS places
 (place_id SERIAL PRIMARY KEY, rack TEXT, shelf TEXT, book_id INTEGER, 
 FOREIGN KEY(book_id) REFERENCES books (book_id)); """
 
-INSERT_BOOK_RETURN_ID = """INSERT INTO books (title, author, date_release, is_borrow) 
-VALUES (%s, %s, %s, %s) RETURNING book_id;"""
+INSERT_BOOK_RETURN_ID = """INSERT INTO books (title, author, date_release, borrower_id, rental_date, return_date) 
+VALUES (%s, %s, %s, %s, %s, %s) RETURNING book_id;"""
 INSERT_BORROWER_RETURN_ID = """INSERT INTO borrower (first_name, last_name, email,
 debt, book_id) VALUES (%s, %s, %s, %s, %s) RETURNING borrower_id;"""
 INSERT_PLACE_RETURN_ID = """INSERT INTO places (rack, shelf, book_id) VALUES (%s, %s, %s)
@@ -41,7 +41,6 @@ SELECT_PLACE_BY_BORROWER_ID = """SELECT places.place_id, places.rack, places.she
 INNER JOIN books ON books.book_id = places.book_id WHERE books.borrower_id = %s ORDER BY books.book_id;"""
 SELECT_PLACE_BY_BOOK_TITLE = """SELECT places.place_id, places.rack, places.shelf FROM places
 INNER JOIN books ON books.book_id = places.book_id WHERE books.title = %s ORDER BY books.book_id;"""
-
 
 DELETE_BOOK_BY_TITLE = """DELETE FROM books WHERE title=%s RETURNING*;"""
 DELETE_BOOK_BY_ID = """DELETE FROM books WHERE book_id=%s RETURNING*;"""
@@ -104,9 +103,9 @@ class Database:
             cursor.execute(CREATE_BOOKS)
             cursor.execute(CREATE_PLACES)
 
-    def add_book(self, title, author, date_release, is_borrow):
+    def add_book(self, title, author, date_release, borrower_id, rental_date, return_date):
         with self.get_cursor() as cursor:
-            cursor.execute(INSERT_BOOK_RETURN_ID, (title, author, date_release, is_borrow))
+            cursor.execute(INSERT_BOOK_RETURN_ID, (title, author, date_release, borrower_id, rental_date, return_date))
             return cursor.fetchone()[0]
 
     def add_place(self, rack, shelf, book_id):
