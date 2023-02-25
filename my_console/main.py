@@ -2,6 +2,9 @@
 Return book
 """
 from datetime import datetime
+
+import psycopg2
+
 from databasePS import Database
 from models.book import Book
 from models.borrower import Borrower
@@ -27,7 +30,7 @@ class Menu():
     def __init__(self):
         self.menu_options = {
             "1": self.list_of_books,
-            "2": self.add_book, # tu jest problem
+            "2": self.add_book,
             "3": self.remove_book,
             "4": self.list_of_borrowers,
             "5": self.add_borrower,
@@ -55,7 +58,7 @@ class Menu():
         elif mode == 2:  # borrowers
             for borrower in content:
                 print(str(borrower.borrower_id) + ":", borrower.first_name[0], borrower.last_name[0], borrower.email[0],
-                      borrower.debt[0], borrower.book_id[0])
+                      borrower.debt[0])
 
     @staticmethod
     def add_book(db):
@@ -68,7 +71,7 @@ class Menu():
         date_release = date_release.strftime("%d-%m-%Y")
         rental_date = date_release
         return_date = date_release
-        book = Book(title, author, date_release[:10], rack, shelf, rental_date, return_date)
+        book = Book(title, author, date_release[:10], rack, shelf, rental_date=rental_date, return_date=return_date)
         book.save(db)
 
     def remove_book(self, db):
@@ -97,20 +100,27 @@ class Menu():
     def remove_borrower(self, db):
         first_name = input("Enter first name: ")
         last_name = input("Enter last name: ")
-        if len(Borrower.get_borrowers_by_name(db, first_name, last_name)) == 0:
+        borrower = Borrower.get_borrowers_by_name(db, first_name, last_name)
+        if len(borrower) == 0:
             print("Not found borrower")
             return
-        elif len(Borrower.get_borrowers_by_name(db, first_name, last_name)) == 1:
-            self.print_books_or_borrowers("Deleted borrower: ", Borrower.remove_borrower(db, first_name, last_name), 2)
+        elif len(borrower) == 1:
+            try:
+                self.print_books_or_borrowers("Deleted borrower: ", Borrower.remove_borrower(db, first_name, last_name),
+                                              2)
+            except psycopg2.Error:
+                print("You can't delete, because this borrower has a book! History has to be clear.")
         else:
             self.print_books_or_borrowers("List of borrower you want to delete: ",
-                                          Borrower.get_borrowers_by_name(db, first_name, last_name), 2)
-            id = input("Enter borrower's id you want to remove: ")
-            self.print_books_or_borrowers("Deleted borrower: ",
-                                          Borrower.remove_borrower(db, first_param=str(id), second_param=None, mode=2),
-                                          2)
+                                          borrower, 2)
+            borrower_id = input("Enter borrower's id you want to remove: ")
+            try:
+                self.print_books_or_borrowers("Deleted borrower: ",
+                                              Borrower.remove_borrower(db, first_param=str(borrower_id), second_param=None,
+                                                                       mode=2), 2)
+            except psycopg2.Error:
+                print("You can't delete, because this borrower has a book! History has to be clear.")
 
-    # POPRAW JAK JEST WYPOZYCZONA TO U KOGO A JAK NIE JEST TO NA JAKIEJ SZAFCE
     @staticmethod
     def find_book(db):
         title = input("Enter the title book you want to find: ")

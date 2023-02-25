@@ -24,34 +24,37 @@ class Book:
     def get_all(cls, db):
         books = db.get_books()
         places = db.get_places()
-        return [cls(book[1], book[2], book[3], place[1], place[2], borrower_id=book[4], book_id=book[0]) for book, place
-                in zip(books, places)]
+        return [cls(book[1], book[2], book[3], place[1], place[2], borrower_id=book[4], book_id=book[0],
+                    rental_date=book[5], return_date=book[6]) for book, place in zip(books, places)]
 
     @classmethod
     def get_all_by_title(cls, db, title):
         books = db.get_books_by_title(title)
         places = db.get_places_book_by_title_book(title)
-        return [cls(book[1], book[2], book[3], place[1], place[2], borrower_id=book[4], book_id=book[0]) for book, place
-                in zip(books, places)]
+        return [cls(book[1], book[2], book[3], place[1], place[2], borrower_id=book[4], book_id=book[0],
+                    rental_date=book[5], return_date=book[6]) for book, place in zip(books, places)]
 
     @classmethod
     def get_all_by_borrower_id(cls, db, borrower_id):
         books = db.get_books_by_borrower_id(borrower_id)
         places = db.get_places_book_by_borrower_id(borrower_id)
-        return [cls(book[1], book[2], book[3], place[1], place[2], borrower_id=book[4], book_id=book[0]) for book, place
-                in zip(books, places)]
+        return [cls(book[1], book[2], book[3], place[1], place[2], borrower_id=book[4], book_id=book[0],
+                    rental_date=book[5], return_date=book[6]) for book, place in zip(books, places)]
 
     @classmethod
     def remove_book(cls, db, item, mode: int = 1):
         return_book = None
         if mode == 1:
+            book_id = db.get_books_by_title(item)[0][0]
+            db.remove_place_by_book_id(book_id)
             return_book = db.remove_book_by_title(item)
         elif mode == 2:
+            db.remove_place_by_book_id(item)
             return_book = db.remove_book_by_id(item)
-            print(return_book)
 
         return [cls(return_book[1], return_book[2], return_book[3],
-                    return_book[4], return_book[0])]
+                    borrower_id=return_book[4], book_id=return_book[0], rental_date=return_book[5],
+                    return_date=return_book[6])]
 
     @staticmethod
     def find_book(db, title) -> list:

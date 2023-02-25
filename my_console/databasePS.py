@@ -23,13 +23,16 @@ INSERT_PLACE_RETURN_ID = """INSERT INTO places (rack, shelf, book_id) VALUES (%s
 RETURNING place_id;"""
 
 SELECT_ALL_BOOKS = """SELECT * FROM books ORDER BY books.book_id;"""
+# SELECT_BOOK_ID_BY_TITLE = """SELECT books.book_id FROM books WHERE books.title = %s ORDER BY books.book_id LIMIT 1;"""
 SELECT_ALL_PLACES = """SELECT * FROM places ORDER BY places.book_id;"""
 SELECT_BOOKS_BY_TITLE = """SELECT * FROM books WHERE title = %s ORDER BY books.book_id;"""
 SELECT_ALL_BORROWERS = """SELECT * FROM borrower ORDER BY borrower_id;"""
-SELECT_BORROWERS_BY_NAME = """SELECT * FROM borrower WHERE first_name = %s AND last_name = %s;"""
-SELECT_PLACE_BY_TITLE = """SELECT b.title, p.rack, p.shelf  FROM places AS p
-INNER JOIN (SELECT * FROM books WHERE books.title = %s) as b 
-ON p.book_id = b.book_id;"""
+SELECT_BORROWERS_BY_NAME = """SELECT * FROM borrower WHERE first_name = %s AND last_name = %s 
+ORDER BY borrower.borrower_id;"""
+SELECT_PLACE_BY_TITLE = """SELECT b.title, p.rack, p.shelf, borrower.first_name  FROM places AS p
+INNER JOIN (SELECT * FROM books WHERE books.title = 't1') as b 
+ON p.book_id = b.book_id
+left join borrower on borrower.borrower_id = b.borrower_id;""" ########### dodaj concat !!! ID and firstname
 SELECT_FREE_BOOK = """SELECT books.book_id FROM books WHERE books.title = %s AND books.borrower_id is NULL LIMIT 1;"""
 SELECT_BORROWERS_S_BOOKS = """SELECT borrower.borrower_id, borrower.first_name, COUNT(books.borrower_id = borrower.borrower_id)
 AS amount_books FROM borrower INNER JOIN books ON books.borrower_id = borrower.borrower_id
@@ -47,6 +50,7 @@ DELETE_BOOK_BY_ID = """DELETE FROM books WHERE book_id=%s RETURNING*;"""
 DELETE_BORROWER_BY_NAME = """DELETE FROM borrower WHERE first_name = %s AND last_name = %s
 RETURNING*;"""
 DELETE_BORROWER_BY_ID = """DELETE FROM borrower WHERE borrower_id = %s RETURNING*; """
+DELETE_PLACE_BY_BOOK_ID = """DELETE FROM places WHERE book_id = %s;"""
 
 UPDATE_BOOKS_ID_BORROWER = """UPDATE books SET borrower_id = %s WHERE books.book_id = %s RETURNING books.book_id;"""
 RETURN_BOOK = """UPDATE books SET borrower_id = NULL WHERE borrower_id = %s AND books.book_id = %s 
@@ -152,6 +156,10 @@ class Database:
         with self.get_cursor() as cursor:
             cursor.execute(DELETE_BOOK_BY_ID, (id,))
             return cursor.fetchall()[0]
+
+    def remove_place_by_book_id(self, book_id):
+        with self.get_cursor() as cursor:
+            cursor.execute(DELETE_PLACE_BY_BOOK_ID, (book_id,))
 
     def add_borrower(self, first_name, last_name, email, debt, book_id):
         with self.get_cursor() as cursor:
