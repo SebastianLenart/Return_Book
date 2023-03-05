@@ -1,3 +1,8 @@
 1.) metoda find:
 - uzyj w zapytaniu IF, jezeli ksiazka jest wypozyczona nie pokazuj (lub pokazuj NULL)
 rack i shelf a pokazuj borrower_id/name
+2.) dodaj obsługe maili, daty
+3.) bez tkintera, moze kiedys, ogolnie szkoda czasu
+4.) jakies bardziej skomplikowane zapytanie
+5.) dokonczyc kurs posrgresqla
+6.) idz dalej z pycamp...

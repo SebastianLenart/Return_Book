@@ -23,8 +23,10 @@ class Menu():
     9.) Borrow a book
     10.) Return a book
     11.) Student's list of books
+    12.) Check who doesn't return book in time
+    13.) Send email to people who don't return books
     
-    12.) Exit
+    14.) Exit
     Enter your choice: """
 
     def __init__(self):
@@ -116,7 +118,8 @@ class Menu():
             borrower_id = input("Enter borrower's id you want to remove: ")
             try:
                 self.print_books_or_borrowers("Deleted borrower: ",
-                                              Borrower.remove_borrower(db, first_param=str(borrower_id), second_param=None,
+                                              Borrower.remove_borrower(db, first_param=str(borrower_id),
+                                                                       second_param=None,
                                                                        mode=2), 2)
             except psycopg2.Error:
                 print("You can't delete, because this borrower has a book! History has to be clear.")
@@ -127,7 +130,7 @@ class Menu():
         data = Book.find_book(db, title)
         print(data)
         for tup in data:
-            title, rack, shelf = tup
+            title, rack, shelf = tup # here must be correct!!!!!!!!!!!!!!!!!!!!!!!!!!
             print("Your book -", title, "rack:", rack, "shelf:", shelf)
 
     def find_borrower(self, db):
@@ -167,7 +170,7 @@ class Menu():
         with Database() as db:
             db.create_tables()
 
-        while (selection := input(self.MENU)) != "12":
+        while (selection := input(self.MENU)) != "14":
             try:
                 self.menu_options[selection](db)
             except KeyError:

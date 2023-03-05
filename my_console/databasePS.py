@@ -29,10 +29,10 @@ SELECT_BOOKS_BY_TITLE = """SELECT * FROM books WHERE title = %s ORDER BY books.b
 SELECT_ALL_BORROWERS = """SELECT * FROM borrower ORDER BY borrower_id;"""
 SELECT_BORROWERS_BY_NAME = """SELECT * FROM borrower WHERE first_name = %s AND last_name = %s 
 ORDER BY borrower.borrower_id;"""
-SELECT_PLACE_BY_TITLE = """SELECT b.title, p.rack, p.shelf, borrower.first_name  FROM places AS p
-INNER JOIN (SELECT * FROM books WHERE books.title = 't1') as b 
+SELECT_PLACE_BY_TITLE = """SELECT b.title, p.rack, p.shelf, borrower.first_name  || ' ' || borrower.last_name as "Full name"  
+FROM places AS p INNER JOIN (SELECT * FROM books WHERE books.title = %s) as b 
 ON p.book_id = b.book_id
-left join borrower on borrower.borrower_id = b.borrower_id;""" ########### dodaj concat !!! ID and firstname
+left join borrower on borrower.borrower_id = b.borrower_id;"""  ########### dodaj concat !!! ID and firstname
 SELECT_FREE_BOOK = """SELECT books.book_id FROM books WHERE books.title = %s AND books.borrower_id is NULL LIMIT 1;"""
 SELECT_BORROWERS_S_BOOKS = """SELECT borrower.borrower_id, borrower.first_name, COUNT(books.borrower_id = borrower.borrower_id)
 AS amount_books FROM borrower INNER JOIN books ON books.borrower_id = borrower.borrower_id
