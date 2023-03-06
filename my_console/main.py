@@ -130,8 +130,8 @@ class Menu():
         data = Book.find_book(db, title)
         print(data)
         for tup in data:
-            title, rack, shelf = tup # here must be correct!!!!!!!!!!!!!!!!!!!!!!!!!!
-            print("Your book -", title, "rack:", rack, "shelf:", shelf)
+            title, rack, shelf, borrower = tup
+            print("Your book -", title, "rack:", rack, "shelf:", shelf, "borrower:", borrower)
 
     def find_borrower(self, db):
         first_name = input("Enter first name who you find: ")

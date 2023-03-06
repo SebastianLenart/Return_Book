@@ -12,3 +12,4 @@ def send_mail():
     with smtplib.SMTP_SSL(smtp_serwer, port, context=context) as serwer:
         serwer.login(sender_email, password)
         serwer.sendmail(sender_email, sender_email, "testowy mail")
+1
