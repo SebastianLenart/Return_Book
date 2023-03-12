@@ -1,7 +1,7 @@
 """
 Return book
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 import psycopg2
@@ -161,7 +161,7 @@ class Menu:
         borrower_id = input("Enter your borrower_id: ")
         book_id = input("Enter book_id you want to return: ")
         return_book = Book.return_book(db, borrower_id, book_id, self.today)
-        self.check_date_when_return_book(borrower_id, return_book)
+        self.check_date_when_return_book(borrower_id, return_book[0])
         self.print_books_or_borrowers("Return book is:", content=return_book)
 
     def list_of_books_borrower(self, db):
@@ -184,7 +184,18 @@ class Menu:
         self.send_mail_while_deadline_exceeded()
 
     def check_date_when_return_book(self, borrower_id, return_book):
-        pass
+        print("rental_date:", str(return_book.rental_date[0]), "return_date:", str(return_book.return_date))
+        delta_date = return_book.return_date - return_book.rental_date[0]
+        if delta_date > timedelta(days=60):
+            delta_date = delta_date - relativedelta(month=2)
+            print(delta_date)
+            print(str(delta_date))
+            # months_to_paid = delta_date % relativedelta(days=30)
+            # print(months_to_paid)
+            # print("60 days gone")
+
+
+        print("delta dates:", delta_date, type(delta_date))
 
     def send_mail_while_deadline_exceeded(self):
         with Email() as serwer:
