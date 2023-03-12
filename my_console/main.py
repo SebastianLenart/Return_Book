@@ -2,15 +2,17 @@
 Return book
 """
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 import psycopg2
 
 from databasePS import Database
 from models.book import Book
 from models.borrower import Borrower
+from models.emails import Email
 
 
-class Menu():
+class Menu:
     MENU = """---MENU---
     1.) List of books
     2.) Add a book
@@ -23,10 +25,10 @@ class Menu():
     9.) Borrow a book
     10.) Return a book
     11.) Student's list of books
-    12.) Check who doesn't return book in time
-    13.) Send email to people who don't return books
-    
-    14.) Exit
+    12.) Check who doesn't return book in time and send mail to them
+    13.) Extend time of the borrowed book (only 2 times)
+    14.) 
+    15.) Exit
     Enter your choice: """
 
     def __init__(self):
@@ -41,8 +43,11 @@ class Menu():
             "8": self.find_borrower,
             "9": self.borrow_book,
             "10": self.return_book,
-            "11": self.list_of_books_borrower
+            "11": self.list_of_books_borrower,
+            "12": self.check_deadline_exceeded
+            # "13": self.send_mail_while_deadline_exceeded
         }
+        self.today = datetime.today().date()
 
     def list_of_books(self, db):
         self.print_books_or_borrowers("List of books: ", Book.get_all(db))
@@ -146,7 +151,7 @@ class Menu():
             return
         id_borrower = input("Enter id borrower: ")
         if (Book.check_available_book(db, title_book)[0] == Borrower.borrow_book(db, id_borrower, *
-        Book.check_available_book(db, title_book)[0])[0]):
+        Book.check_available_book(db, title_book)[0], self.today)[0]):
             print("OK")
         else:
             print("something it's wrong")
@@ -155,7 +160,9 @@ class Menu():
     def return_book(self, db):
         borrower_id = input("Enter your borrower_id: ")
         book_id = input("Enter book_id you want to return: ")
-        self.print_books_or_borrowers("Return book is:", content=Book.return_book(db, borrower_id, book_id))
+        return_book = Book.return_book(db, borrower_id, book_id, self.today)
+        self.check_date_when_return_book(borrower_id, return_book)
+        self.print_books_or_borrowers("Return book is:", content=return_book)
 
     def list_of_books_borrower(self, db):
         id_borrower = input("Enter borrower id: ")
@@ -165,6 +172,23 @@ class Menu():
         borrower_id, first_name, amount_of_books = db.borrower_s_books(id_borrower)
         print("ID borrower:", borrower_id, "First name:", first_name, "amount_of_books:", amount_of_books)
         self.print_books_or_borrowers(f"List of books:", content=Book.get_all_by_borrower_id(db, borrower_id))
+
+    def check_deadline_exceeded(self, db):
+        data = db.check_who_doesnt_return_book_in_time()
+        for item in data:
+            first_name, email, title, date_rental = item
+            correct_delivery_date = date_rental + relativedelta(months=2)
+            if correct_delivery_date < self.today:
+                print("Deadline {} gone! Return book or extend the time.".format(correct_delivery_date), first_name,
+                      email, title)
+        self.send_mail_while_deadline_exceeded()
+
+    def check_date_when_return_book(self, borrower_id, return_book):
+        pass
+
+    def send_mail_while_deadline_exceeded(self):
+        with Email() as serwer:
+            serwer.send_test_mail()
 
     def start(self):
         with Database() as db:
@@ -178,5 +202,5 @@ class Menu():
 
 
 if __name__ == "__main__":
-    app = Menu() 
+    app = Menu()
     app.start()

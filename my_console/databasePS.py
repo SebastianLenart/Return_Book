@@ -32,7 +32,7 @@ ORDER BY borrower.borrower_id;"""
 SELECT_PLACE_BY_TITLE = """SELECT b.title, p.rack, p.shelf, borrower.first_name  || ' ' || borrower.last_name as "Full name"  
 FROM places AS p INNER JOIN (SELECT * FROM books WHERE books.title = %s) as b 
 ON p.book_id = b.book_id
-left join borrower on borrower.borrower_id = b.borrower_id;"""  ########### dodaj concat !!! ID and firstname
+left join borrower on borrower.borrower_id = b.borrower_id;"""
 SELECT_FREE_BOOK = """SELECT books.book_id FROM books WHERE books.title = %s AND books.borrower_id is NULL LIMIT 1;"""
 SELECT_BORROWERS_S_BOOKS = """SELECT borrower.borrower_id, borrower.first_name, COUNT(books.borrower_id = borrower.borrower_id)
 AS amount_books FROM borrower INNER JOIN books ON books.borrower_id = borrower.borrower_id
@@ -44,6 +44,11 @@ SELECT_PLACE_BY_BORROWER_ID = """SELECT places.place_id, places.rack, places.she
 INNER JOIN books ON books.book_id = places.book_id WHERE books.borrower_id = %s ORDER BY books.book_id;"""
 SELECT_PLACE_BY_BOOK_TITLE = """SELECT places.place_id, places.rack, places.shelf FROM places
 INNER JOIN books ON books.book_id = places.book_id WHERE books.title = %s ORDER BY books.book_id;"""
+SELECT_PLACE_BY_BOOK_ID = """SELECT places.place_id, places.rack, places.shelf FROM places
+INNER JOIN books ON books.book_id = places.book_id WHERE books.book_id = %s ORDER BY books.book_id;"""
+SELECT_WHO_DOESNT_RETURN_BOOK = """SELECT borrower.first_name, borrower.email, books.title, books.rental_date  
+FROM books INNER JOIN borrower ON books.borrower_id = borrower.borrower_id
+WHERE books.return_date IS NULL AND books.borrower_id IS NOT NULL;"""
 
 DELETE_BOOK_BY_TITLE = """DELETE FROM books WHERE title=%s RETURNING*;"""
 DELETE_BOOK_BY_ID = """DELETE FROM books WHERE book_id=%s RETURNING*;"""
@@ -52,8 +57,9 @@ RETURNING*;"""
 DELETE_BORROWER_BY_ID = """DELETE FROM borrower WHERE borrower_id = %s RETURNING*; """
 DELETE_PLACE_BY_BOOK_ID = """DELETE FROM places WHERE book_id = %s;"""
 
-UPDATE_BOOKS_ID_BORROWER = """UPDATE books SET borrower_id = %s WHERE books.book_id = %s RETURNING books.book_id;"""
-RETURN_BOOK = """UPDATE books SET borrower_id = NULL WHERE borrower_id = %s AND books.book_id = %s 
+UPDATE_BOOKS_ID_BORROWER = """UPDATE books SET borrower_id = %s, rental_date = %s,  return_date = NULL
+WHERE books.book_id = %s RETURNING books.book_id;"""
+RETURN_BOOK = """UPDATE books SET borrower_id = NULL, return_date = %s WHERE borrower_id = %s AND books.book_id = %s 
 RETURNING *;"""
 # UPDATE_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
 UPDATE_BOOKS_ID_IN_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
@@ -147,6 +153,11 @@ class Database:
             cursor.execute(SELECT_PLACE_BY_BOOK_TITLE, (title,))
             return cursor.fetchall()
 
+    def get_place_book_by_book_id(self, book_id):
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_PLACE_BY_BOOK_ID, (book_id,))
+            return cursor.fetchall()
+
     def remove_book_by_title(self, title):
         with self.get_cursor() as cursor:
             cursor.execute(DELETE_BOOK_BY_TITLE, (title,))
@@ -196,9 +207,9 @@ class Database:
             cursor.execute(SELECT_FREE_BOOK, (title,))
             return cursor.fetchall()
 
-    def borrow_book(self, id_borrower, id_book):
+    def borrow_book(self, id_borrower, id_book, date_rental):
         with self.get_cursor() as cursor:
-            cursor.execute(UPDATE_BOOKS_ID_BORROWER, (id_borrower, id_book))
+            cursor.execute(UPDATE_BOOKS_ID_BORROWER, (id_borrower, date_rental, id_book))
             return cursor.fetchall()
 
     def borrower_s_books(self, id_borrower=1):
@@ -206,7 +217,12 @@ class Database:
             cursor.execute(SELECT_BORROWERS_S_BOOKS, (id_borrower,))
             return cursor.fetchall()[0]
 
-    def return_book(self, borrower_id, book_id):
+    def return_book(self, borrower_id, book_id, date_return):
         with self.get_cursor() as cursor:
-            cursor.execute(RETURN_BOOK, (borrower_id, book_id))
+            cursor.execute(RETURN_BOOK, (date_return, borrower_id, book_id))
+            return cursor.fetchall()
+
+    def check_who_doesnt_return_book_in_time(self):
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_WHO_DOESNT_RETURN_BOOK)
             return cursor.fetchall()
