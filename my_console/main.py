@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 import psycopg2
-
 from databasePS import Database
 from models.book import Book
 from models.borrower import Borrower
@@ -26,10 +25,11 @@ class Menu:
     10.) Return a book
     11.) Student's list of books
     12.) Check who doesn't return book in time and send mail to them
-    13.) Extend time of the borrowed book (only 2 times)
-    14.) 
+    14.) SPARE
     15.) Exit
     Enter your choice: """
+
+    COST_OF_MONTH = 10  # when you exceed deadline every month
 
     def __init__(self):
         self.menu_options = {
@@ -161,7 +161,7 @@ class Menu:
         borrower_id = input("Enter your borrower_id: ")
         book_id = input("Enter book_id you want to return: ")
         return_book = Book.return_book(db, borrower_id, book_id, self.today)
-        self.check_date_when_return_book(borrower_id, return_book[0])
+        self.check_date_when_return_book(db, borrower_id, return_book[0]) # wyskakuje blad jak lista pusta! dodaj do Borrower moze
         self.print_books_or_borrowers("Return book is:", content=return_book)
 
     def list_of_books_borrower(self, db):
@@ -183,19 +183,21 @@ class Menu:
                       email, title)
         self.send_mail_while_deadline_exceeded()
 
-    def check_date_when_return_book(self, borrower_id, return_book):
-        print("rental_date:", str(return_book.rental_date[0]), "return_date:", str(return_book.return_date))
+    def check_date_when_return_book(self, db, borrower_id, return_book):
+        # print("rental_date:", str(return_book.rental_date[0]), "return_date:", str(return_book.return_date))
         delta_date = return_book.return_date - return_book.rental_date[0]
         if delta_date > timedelta(days=60):
-            delta_date = delta_date - relativedelta(month=2)
-            print(delta_date)
-            print(str(delta_date))
-            # months_to_paid = delta_date % relativedelta(days=30)
-            # print(months_to_paid)
-            # print("60 days gone")
-
-
-        print("delta dates:", delta_date, type(delta_date))
+            delta_date = delta_date - timedelta(days=60)
+            constans_every_month = int((int(delta_date.days) / 30) + 1)
+            print("constans_every_month: ", constans_every_month, "delta_time:", delta_date)
+            if constans_every_month >= 2:
+                cost_borrower_book = self.COST_OF_MONTH * constans_every_month
+            else:
+                cost_borrower_book = self.COST_OF_MONTH
+            actual_debt = Borrower.get_debt_by_borrower_id(db, borrower_id)
+            actual_debt = actual_debt - cost_borrower_book
+            Borrower.set_debt(db, actual_debt, borrower_id)
+            print("debt after:", actual_debt)
 
     def send_mail_while_deadline_exceeded(self):
         with Email() as serwer:

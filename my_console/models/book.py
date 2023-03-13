@@ -72,7 +72,6 @@ class Book:
             print("This book cannot return.")
             return []
         print("book", book)
-        print("book_id", book[0])
         place = db.get_place_book_by_book_id(book[0])[0]
         return [cls(book[1], book[2], book[3], place[1], place[2], borrower_id=book[4], book_id=book[0],
                     rental_date=book[5], return_date=book[6])]

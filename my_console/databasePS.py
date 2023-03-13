@@ -49,6 +49,7 @@ INNER JOIN books ON books.book_id = places.book_id WHERE books.book_id = %s ORDE
 SELECT_WHO_DOESNT_RETURN_BOOK = """SELECT borrower.first_name, borrower.email, books.title, books.rental_date  
 FROM books INNER JOIN borrower ON books.borrower_id = borrower.borrower_id
 WHERE books.return_date IS NULL AND books.borrower_id IS NOT NULL;"""
+SELECT_DEBT_BY_BORROWER_ID = """SELECT borrower.debt FROM borrower WHERE borrower.borrower_id = %s;"""
 
 DELETE_BOOK_BY_TITLE = """DELETE FROM books WHERE title=%s RETURNING*;"""
 DELETE_BOOK_BY_ID = """DELETE FROM books WHERE book_id=%s RETURNING*;"""
@@ -63,7 +64,7 @@ RETURN_BOOK = """UPDATE books SET borrower_id = NULL, return_date = %s WHERE bor
 RETURNING *;"""
 # UPDATE_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
 UPDATE_BOOKS_ID_IN_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
-
+UPDATE_DEBT = """UPDATE borrower SET debt = %s WHERE borrower_id = %s;"""
 
 class Database:
     def __init__(self):
@@ -187,6 +188,11 @@ class Database:
             cursor.execute(SELECT_BORROWERS_BY_NAME, (fname, lname))
             return cursor.fetchall()
 
+    def get_debt_by_borrower_id(self, id_borrower):
+        with self.get_cursor() as cursor:
+            cursor.execute(SELECT_DEBT_BY_BORROWER_ID, (id_borrower, ))
+            return cursor.fetchall()[0][0]
+
     def remove_borrowers_by_name(self, fname, lname):
         with self.get_cursor() as cursor:
             cursor.execute(DELETE_BORROWER_BY_NAME, (fname, lname))
@@ -226,3 +232,8 @@ class Database:
         with self.get_cursor() as cursor:
             cursor.execute(SELECT_WHO_DOESNT_RETURN_BOOK)
             return cursor.fetchall()
+
+    def set_new_value_debt(self, money, borrower_id):
+        with self.get_cursor() as cursor:
+            cursor.execute(UPDATE_DEBT, (money, borrower_id))
+            # return cursor.fetchall()

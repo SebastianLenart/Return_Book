@@ -33,3 +33,11 @@ class Borrower:
     @staticmethod
     def borrow_book(db, id_borrower, id_book, date_rental):
         return db.borrow_book(id_borrower, id_book, date_rental)
+
+    @staticmethod
+    def get_debt_by_borrower_id(db, id_borrower):
+        return db.get_debt_by_borrower_id(id_borrower)
+
+    @staticmethod
+    def set_debt(db, money, id_borrower):
+        db.set_new_value_debt(money, id_borrower) # moze cos zwrocic ???
