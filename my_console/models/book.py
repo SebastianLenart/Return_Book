@@ -75,3 +75,7 @@ class Book:
         place = db.get_place_book_by_book_id(book[0])[0]
         return [cls(book[1], book[2], book[3], place[1], place[2], borrower_id=book[4], book_id=book[0],
                     rental_date=book[5], return_date=book[6])]
+
+    @staticmethod
+    def update_dates_after_return(db, book_id):
+        db.update_dates_from_books(book_id)

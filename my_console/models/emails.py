@@ -26,6 +26,7 @@ class Email(smtplib.SMTP_SSL):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+
         if isinstance(exc_type, Exception):
             print(exc_type, exc_val, exc_tb)
             self.close()
@@ -35,6 +36,8 @@ class Email(smtplib.SMTP_SSL):
         self.msg['Subject'] = subject
         self.msg.set_content(message)
         self.send_message(self.msg)
+        # self.quit()
+        # # self.msg['To']
 
     def send_test_mail(self):
         self.send_message(self.msg)

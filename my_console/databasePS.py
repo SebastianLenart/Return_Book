@@ -65,6 +65,8 @@ RETURNING *;"""
 # UPDATE_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
 UPDATE_BOOKS_ID_IN_BORROWER = """UPDATE borrower SET book_id = %s WHERE borrower.borrower_id = %s;"""
 UPDATE_DEBT = """UPDATE borrower SET debt = %s WHERE borrower_id = %s;"""
+UPDATE_DATES_IN_BOOKS = """UPDATE books SET rental_date = NULL, return_date = NULL WHERE book_id = %s AND
+borrower_id is NULL;"""
 
 class Database:
     def __init__(self):
@@ -228,7 +230,7 @@ class Database:
             cursor.execute(RETURN_BOOK, (date_return, borrower_id, book_id))
             return cursor.fetchall()
 
-    def check_who_doesnt_return_book_in_time(self):
+    def get_rentaldate_who_doesnt_return_book(self):
         with self.get_cursor() as cursor:
             cursor.execute(SELECT_WHO_DOESNT_RETURN_BOOK)
             return cursor.fetchall()
@@ -236,4 +238,7 @@ class Database:
     def set_new_value_debt(self, money, borrower_id):
         with self.get_cursor() as cursor:
             cursor.execute(UPDATE_DEBT, (money, borrower_id))
-            # return cursor.fetchall()
+
+    def update_dates_from_books(self, book_id):
+        with self.get_cursor() as cursor:
+            cursor.execute(UPDATE_DATES_IN_BOOKS, (book_id,))

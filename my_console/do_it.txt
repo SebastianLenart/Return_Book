@@ -7,3 +7,6 @@ rack i shelf a pokazuj borrower_id/name
 4.) jakies bardziej skomplikowane zapytanie
 5.) dokonczyc kurs posrgresqla
 6.) idz dalej z pycamp...
+
+7.) TESTY!!! assert ect..
+8.) OPIS DZIALANIA README..

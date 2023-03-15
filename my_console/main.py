@@ -9,6 +9,7 @@ from databasePS import Database
 from models.book import Book
 from models.borrower import Borrower
 from models.emails import Email
+import pprint
 
 
 class Menu:
@@ -25,8 +26,8 @@ class Menu:
     10.) Return a book
     11.) Student's list of books
     12.) Check who doesn't return book in time and send mail to them
-    14.) SPARE
-    15.) Exit
+    13.) SPARE
+    14.) Exit
     Enter your choice: """
 
     COST_OF_MONTH = 10  # when you exceed deadline every month
@@ -45,7 +46,7 @@ class Menu:
             "10": self.return_book,
             "11": self.list_of_books_borrower,
             "12": self.check_deadline_exceeded
-            # "13": self.send_mail_while_deadline_exceeded
+
         }
         self.today = datetime.today().date()
 
@@ -161,7 +162,12 @@ class Menu:
         borrower_id = input("Enter your borrower_id: ")
         book_id = input("Enter book_id you want to return: ")
         return_book = Book.return_book(db, borrower_id, book_id, self.today)
-        self.check_date_when_return_book(db, borrower_id, return_book[0]) # wyskakuje blad jak lista pusta! dodaj do Borrower moze
+        if len(return_book) == 0:
+            print("Something went  wrong, maybe this book is returned?")
+            return
+        self.check_date_when_return_book(db, borrower_id,
+                                         return_book[0])  # wyskakuje blad jak lista pusta! dodaj do Borrower moze
+        Book.update_dates_after_return(db, book_id)
         self.print_books_or_borrowers("Return book is:", content=return_book)
 
     def list_of_books_borrower(self, db):
@@ -174,17 +180,27 @@ class Menu:
         self.print_books_or_borrowers(f"List of books:", content=Book.get_all_by_borrower_id(db, borrower_id))
 
     def check_deadline_exceeded(self, db):
-        data = db.check_who_doesnt_return_book_in_time()
-        for item in data:
+        data = db.get_rentaldate_who_doesnt_return_book()
+        Email = dict()
+        for number, item in enumerate(data):
             first_name, email, title, date_rental = item
             correct_delivery_date = date_rental + relativedelta(months=2)
             if correct_delivery_date < self.today:
-                print("Deadline {} gone! Return book or extend the time.".format(correct_delivery_date), first_name,
+                print("Deadline {} gone! Return book.".format(correct_delivery_date), first_name,
                       email, title)
-        self.send_mail_while_deadline_exceeded()
+                Email[number] = {"first_name": first_name, "email": email, "title": title,
+                                 "correct_delivery_date": correct_delivery_date}
+        pprint.pprint(Email)
+        self.send_mail_while_deadline_exceeded(Email)
+
+    def send_mail_while_deadline_exceeded(self, email):
+        emails = [subkeys["email"] for subkeys in email.values()]
+        print("EMAILS:", emails)
+        #################################################################
+        with Email() as serwer:
+            serwer.send_mail(emails, "Deadline return book", "You have to back book!")
 
     def check_date_when_return_book(self, db, borrower_id, return_book):
-        # print("rental_date:", str(return_book.rental_date[0]), "return_date:", str(return_book.return_date))
         delta_date = return_book.return_date - return_book.rental_date[0]
         if delta_date > timedelta(days=60):
             delta_date = delta_date - timedelta(days=60)
@@ -198,10 +214,6 @@ class Menu:
             actual_debt = actual_debt - cost_borrower_book
             Borrower.set_debt(db, actual_debt, borrower_id)
             print("debt after:", actual_debt)
-
-    def send_mail_while_deadline_exceeded(self):
-        with Email() as serwer:
-            serwer.send_test_mail()
 
     def start(self):
         with Database() as db:
