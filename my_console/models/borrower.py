@@ -32,6 +32,7 @@ class Borrower:
 
     @staticmethod
     def borrow_book(db, id_borrower, id_book, date_rental):
+        print(db.borrow_book(id_borrower, id_book, date_rental))
         return db.borrow_book(id_borrower, id_book, date_rental)
 
     @staticmethod

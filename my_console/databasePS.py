@@ -18,7 +18,7 @@ FOREIGN KEY(book_id) REFERENCES books (book_id)); """
 INSERT_BOOK_RETURN_ID = """INSERT INTO books (title, author, date_release, borrower_id, rental_date, return_date) 
 VALUES (%s, %s, %s, %s, %s, %s) RETURNING book_id;"""
 INSERT_BORROWER_RETURN_ID = """INSERT INTO borrower (first_name, last_name, email,
-debt, book_id) VALUES (%s, %s, %s, %s, %s) RETURNING borrower_id;"""
+debt) VALUES (%s, %s, %s, %s) RETURNING borrower_id;"""
 INSERT_PLACE_RETURN_ID = """INSERT INTO places (rack, shelf, book_id) VALUES (%s, %s, %s)
 RETURNING place_id;"""
 
@@ -175,9 +175,9 @@ class Database:
         with self.get_cursor() as cursor:
             cursor.execute(DELETE_PLACE_BY_BOOK_ID, (book_id,))
 
-    def add_borrower(self, first_name, last_name, email, debt, book_id):
+    def add_borrower(self, first_name, last_name, email, debt):
         with self.get_cursor() as cursor:
-            cursor.execute(INSERT_BORROWER_RETURN_ID, (first_name, last_name, email, debt, book_id))
+            cursor.execute(INSERT_BORROWER_RETURN_ID, (first_name, last_name, email, debt))
             return cursor.fetchone()[0]
 
     def get_all_borrowers(self):

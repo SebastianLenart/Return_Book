@@ -14,30 +14,33 @@ class Email(smtplib.SMTP_SSL):
         self.sender_email = getenv("MAIL_USERNAME")
         self.password = getenv("PASSWORD")  # generuje sie w ustawieniach google
         self.msg = EmailMessage()
-        self.msg['Subject'] = "subject"
+        # self.msg['Subject'] = "subject"
         self.msg['From'] = self.sender_email
-        self.msg['To'] = self.sender_email
-        self.msg.set_content("Text")
+        # self.msg['To'] = self.sender_email
+        # self.msg.set_content("Text")
         self.context = ssl.create_default_context()
         smtplib.SMTP_SSL.__init__(self, host=self.smtp_serwer, port=self.port, context=self.context)
+        # self.quit()
+        # del smsg['To]
 
     def __enter__(self):
         self.login(self.sender_email, self.password)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-
         if isinstance(exc_type, Exception):
             print(exc_type, exc_val, exc_tb)
             self.close()
 
-    def send_mail(self, receivers, subject, message):
-        self.msg['To'] = receivers
-        self.msg['Subject'] = subject
-        self.msg.set_content(message)
-        self.send_message(self.msg)
-        # self.quit()
-        # # self.msg['To']
+    def send_mail(self, receiver, subject, message):
+        print("sendmail")
+        msgg = EmailMessage()
+        msgg['From'] = self.sender_email
+        msgg['To'] = receiver
+        msgg['Subject'] = subject
+        msgg.set_content(message)
+        self.send_message(msgg)
+
 
     def send_test_mail(self):
         self.send_message(self.msg)

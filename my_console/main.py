@@ -49,6 +49,7 @@ class Menu:
 
         }
         self.today = datetime.today().date()
+        self.now_time = datetime.now()
 
     def list_of_books(self, db):
         self.print_books_or_borrowers("List of books: ", Book.get_all(db))
@@ -151,17 +152,24 @@ class Menu:
             print("This book is not available now.")
             return
         id_borrower = input("Enter id borrower: ")
-        if (Book.check_available_book(db, title_book)[0] == Borrower.borrow_book(db, id_borrower, *
-        Book.check_available_book(db, title_book)[0], self.today)[0]):
-            print("OK")
-        else:
-            print("something it's wrong")
-        self.student_list_of_books(db, id_borrower)
+        try:
+            if (Book.check_available_book(db, title_book)[0] == Borrower.borrow_book(db, id_borrower, *
+            Book.check_available_book(db, title_book)[0], self.today)[0]):
+                print("OK")
+            else:
+                print("something it's wrong")
+            self.student_list_of_books(db, id_borrower)
+        except psycopg2.errors.InvalidTextRepresentation:
+            print("wrong ID borrower")
 
     def return_book(self, db):
         borrower_id = input("Enter your borrower_id: ")
         book_id = input("Enter book_id you want to return: ")
-        return_book = Book.return_book(db, borrower_id, book_id, self.today)
+        try:
+            return_book = Book.return_book(db, borrower_id, book_id, self.today)
+        except psycopg2.errors.InvalidTextRepresentation:
+            print("Something wrong.")
+            return
         if len(return_book) == 0:
             print("Something went  wrong, maybe this book is returned?")
             return
@@ -175,7 +183,14 @@ class Menu:
         self.student_list_of_books(db, id_borrower)
 
     def student_list_of_books(self, db, id_borrower):
-        borrower_id, first_name, amount_of_books = db.borrower_s_books(id_borrower)
+        try:
+            borrower_id, first_name, amount_of_books = db.borrower_s_books(id_borrower)
+        except IndexError:
+            print("Empty!")
+            return
+        except psycopg2.errors.InvalidTextRepresentation:
+            print("Something go wrong. Maybe wrong ID?")
+            return
         print("ID borrower:", borrower_id, "First name:", first_name, "amount_of_books:", amount_of_books)
         self.print_books_or_borrowers(f"List of books:", content=Book.get_all_by_borrower_id(db, borrower_id))
 
@@ -193,12 +208,14 @@ class Menu:
         pprint.pprint(Email)
         self.send_mail_while_deadline_exceeded(Email)
 
-    def send_mail_while_deadline_exceeded(self, email):
-        emails = [subkeys["email"] for subkeys in email.values()]
+    def send_mail_while_deadline_exceeded(self, data):
+        emails = [subkeys["email"] for subkeys in data.values()]
         print("EMAILS:", emails)
-        #################################################################
+        # print(type(data), data)
         with Email() as serwer:
-            serwer.send_mail(emails, "Deadline return book", "You have to back book!")
+            for _, subdict in data.items():
+                serwer.send_mail(subdict['email'], f"RETURN BOOK {self.now_time}", f"Please {subdict['first_name']}, return "
+                                                                  f"{subdict['title']}, deadline was {subdict['title']}.")
 
     def check_date_when_return_book(self, db, borrower_id, return_book):
         delta_date = return_book.return_date - return_book.rental_date[0]
