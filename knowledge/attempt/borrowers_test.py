@@ -28,3 +28,4 @@ def test_borowers(create_connection):
     print(users)
     assert users[0].name == "siostra"
     assert users[1].name == "brat"
+# python -m pytest -s borowers.py
